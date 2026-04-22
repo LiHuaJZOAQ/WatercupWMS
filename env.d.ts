@@ -1,0 +1,2 @@
+/// <reference types="vite/client" />
+VITE_APP_BASE_API='http://localhost:3000'
