@@ -10,6 +10,19 @@
           <span>首页</span>
         </template>
       </el-menu-item>
+      <el-sub-menu index="基础数据">
+        <template #title>
+          <el-icon>
+            <Document />
+          </el-icon>
+          <span>基础数据</span>
+        </template>
+        <el-menu-item index="基础数据/供应商管理">供应商管理</el-menu-item>
+        <el-menu-item index="基础数据/客户管理">客户管理</el-menu-item>
+        <el-menu-item index="基础数据/部门管理">部门管理</el-menu-item>
+        <el-menu-item index="基础数据/加工厂管理">加工厂管理</el-menu-item>
+        <el-menu-item index="基础数据/成品档案">成品档案</el-menu-item>
+      </el-sub-menu>
       <el-sub-menu index="入库管理">
         <template #title>
           <el-icon>
@@ -68,27 +81,22 @@
       <el-sub-menu index="系统设置">
         <template #title>
           <el-icon>
-            <setting />
+            <Setting />
           </el-icon>
           <span>系统设置</span>
         </template>
-        <el-sub-menu index="系统管理">
-          <template #title>
-            <span>系统管理</span>
-          </template>
-          <el-menu-item index="系统设置/用户管理">用户管理</el-menu-item>
-          <el-menu-item index="系统设置/权限管理">权限管理</el-menu-item>
-        </el-sub-menu>
-        <el-sub-menu index="数据管理">
-          <template #title>
-            <span>数据管理</span>
-          </template>
-          <el-menu-item index="系统设置/数据备份">数据备份</el-menu-item>
-          <el-menu-item index="系统设置/数据恢复">数据恢复</el-menu-item>
-        </el-sub-menu>
-        <el-menu-item index="系统设置/系统退出">退出登录</el-menu-item>
-        <el-menu-item index="系统设置/系统修改密码">修改密码</el-menu-item>
+        <el-menu-item index="系统设置/用户管理">用户管理</el-menu-item>
+        <el-menu-item index="系统设置/角色管理">角色管理</el-menu-item>
+        <el-menu-item index="系统设置/操作日志">操作日志</el-menu-item>
       </el-sub-menu>
+      
+      <!-- 新增创新功能入口 -->
+      <el-menu-item index="创新功能/移动扫码台">
+        <el-icon>
+          <Cellphone />
+        </el-icon>
+        <template #title>移动扫码工作台</template>
+      </el-menu-item>
     </el-menu>
   </el-row>
   <template>
@@ -102,6 +110,8 @@ import {
   Menu as IconMenu,
   Location,
   Setting,
+  HomeFilled,
+  Cellphone
 } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import LogoutView from '@/views/LogoutView.vue'
@@ -117,16 +127,40 @@ const handleMenuClick = (index: string) => {
   if (index === "首页") {
     console.log("首页")
     sendChangeView("MainView")
+  } else if (index === "基础数据/供应商管理") {
+    sendChangeView("SupplierManage")
+  } else if (index === "基础数据/客户管理") {
+    sendChangeView("CustomerManage")
+  } else if (index === "基础数据/部门管理") {
+    sendChangeView("DepartmentManage")
+  } else if (index === "基础数据/加工厂管理") {
+    sendChangeView("ProcessingFactoryManage")
+  } else if (index === "基础数据/成品档案") {
+    sendChangeView("FinishedProductManage")
   } else if (index === "入库管理/原料入库") {
     sendChangeView("InStorageRawMaterial")
+  } else if (index === "入库管理/产品入库") {
+    sendChangeView("InStorageFinishedProduct")
   } else if (index === '出库管理/原料出库') {
     sendChangeView('OutStorageRawMaterial')
+  } else if (index === '出库管理/产品出库') {
+    sendChangeView('OutStorageFinishedProduct')
   } else if (index === '盘点管理/原料盘点') {
     sendChangeView('CheckStorageRawMaterial')
+  } else if (index === '盘点管理/产品盘点') {
+    sendChangeView('CheckStorageFinishedProduct')
   } else if (index === '库存管理/原料库存') {
     sendChangeView('InventoryRawMaterial')
   } else if (index === '仓位管理/原料仓位') {
     sendChangeView('LocationRawMaterial')
+  } else if (index === '系统设置/用户管理') {
+    sendChangeView('UserManage')
+  } else if (index === '系统设置/角色管理') {
+    sendChangeView('RoleManage')
+  } else if (index === '系统设置/操作日志') {
+    sendChangeView('OperationLog')
+  } else if (index === '创新功能/移动扫码台') {
+    sendChangeView('MobileScanner')
   } else if (index === '系统设置/系统退出') {
     LogoutState.value = LogoutState.value == true ? false : true
   }

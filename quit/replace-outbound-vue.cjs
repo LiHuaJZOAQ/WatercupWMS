@@ -1,4 +1,7 @@
+const fs = require('fs');
+const path = './src/views/home/components/OutStorage/OutRawMaterial.vue';
 
+const newContent = `
 <template>
   <div class="erp-container">
     <!-- 查询条件区域 -->
@@ -308,7 +311,7 @@ const confirmAudit = async () => {
 
 const handleRevoke = async (row) => {
   try {
-    await ElMessageBox.confirm(`确定要撤销出库单 ${row.outboundNo} 吗？`, '提示', { type: 'warning' });
+    await ElMessageBox.confirm(\`确定要撤销出库单 \${row.outboundNo} 吗？\`, '提示', { type: 'warning' });
     await api.revokeOutboundOrder(row.id);
     ElMessage.success('撤销成功');
     fetchData();
@@ -322,7 +325,7 @@ const handleRevoke = async (row) => {
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm(`确定要删除出库单 ${row.outboundNo} 吗？此操作不可恢复。`, '危险操作', { type: 'error' });
+    await ElMessageBox.confirm(\`确定要删除出库单 \${row.outboundNo} 吗？此操作不可恢复。\`, '危险操作', { type: 'error' });
     await api.deleteOutboundOrder(row.id);
     ElMessage.success('删除成功');
     fetchData();
@@ -430,3 +433,7 @@ onMounted(() => {
   padding: 0 20px;
 }
 </style>
+`;
+
+fs.writeFileSync(path, newContent);
+console.log('OutRawMaterial.vue updated!');

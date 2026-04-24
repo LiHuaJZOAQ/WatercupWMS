@@ -657,12 +657,65 @@ const handlePrint = async (row) => {
   }
 
   try {
-    // 实际项目中这里可以调用打印API获取数据后渲染打印模板
-    // 这里简化处理，直接打印第一个选中的单据
     const res = await api.getInboundOrderPrint(ids[0]);
     console.log('打印数据:', res.data);
-    ElMessage.success('已准备打印数据，请连接打印机');
-    // 实际项目中这里应该调用打印方法
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>入库单打印</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+              h2 { text-align: center; margin-bottom: 20px; }
+              .header-info { display: flex; justify-content: space-between; margin-bottom: 10px; }
+            </style>
+          </head>
+          <body>
+            <h2>原料入库单</h2>
+            <div class="header-info">
+              <span><strong>单号：</strong>${res.data.warehouseReceiptNo || ''}</span>
+              <span><strong>入库日期：</strong>${res.data.warehouseDate || ''}</span>
+            </div>
+            <div class="header-info">
+              <span><strong>供应商：</strong>${res.data.supplierName || ''}</span>
+              <span><strong>生产商：</strong>${res.data.manufacturerName || ''}</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>原料名称</th>
+                  <th>原料编号</th>
+                  <th>实收数量</th>
+                  <th>实收毛重</th>
+                  <th>实收净重</th>
+                  <th>仓库</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>${res.data.materialName || ''}</td>
+                  <td>${res.data.materialNo || ''}</td>
+                  <td>${res.data.receivedQuantity || ''}</td>
+                  <td>${res.data.receivedGrossWeight || ''}</td>
+                  <td>${res.data.receivedNetWeight || ''}</td>
+                  <td>${res.data.warehouse || ''}</td>
+                </tr>
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      // 等待样式加载后打印
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 200);
+    }
   } catch (error) {
     ElMessage.error('获取打印数据失败');
     console.error(error);
@@ -676,33 +729,12 @@ const handlePrint = async (row) => {
 
 const handleDetails = async (row) => {
   try {
-    // 获取入库单的 ID
-    const { id } = row;
-
-    // 发送 GET 请求获取入库单详情
-    const response = await fetch(`/api/inbound-orders/${id}`);
-    
-    // 判断请求是否成功
-    if (!response.ok) {
-      const errorData = await response.json();
-      alert(errorData.message || '获取入库单详情失败');
-      return;
-    }
-
-    // 获取返回的入库单详情数据
-    const inboundDetail = await response.json();
-
-    // 处理入库单数据
-    const { data } = inboundDetail; // 假设数据是放在 `data` 字段中的
-
-    // 你可以根据需要更新页面中的状态
-    setDetailsData(data); // setDetailsData 是更新状态的函数，可以把数据存入组件的状态中（假设你使用 React）
-
-    // 也可以用其他方式处理数据，比如跳转到详情页、展示模态框等
-    console.log(data);
+    const res = await api.getInboundOrderDetail(row.id);
+    detailsData.value = res.data;
+    detailsDialogVisible.value = true;
   } catch (error) {
     console.error('获取入库单详情失败:', error);
-    alert('获取入库单详情失败');
+    ElMessage.error('获取入库单详情失败');
   }
 };
 

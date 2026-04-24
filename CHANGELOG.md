@@ -1,6 +1,33 @@
 
 ---
 
+## 2026/04/23
+
+### 架构与配置优化
+    - **一键启动优化**：在根目录 `package.json` 中引入了 `concurrently` 依赖，优化了 `npm run dev` 脚本，现可通过单条命令同时启动 Vue 前端 (Vite) 和 Node 后端 (Express) 服务，极大简化了开发启动流程。
+    - **冗余文件清理**：将开发期间残留的 `.` 开头的临时备份文件、用于批量生成 API 的 `.cjs` 脚本文件以及 dogfood 测试的报告统一迁移到了 `quit/` 目录下，并补充了相应的 `quit/README.md`。
+
+### 全功能补齐与前后端打通
+    - **基础数据模块 (CRUD)**：基于系统现有的 `Supplier`、`Customer`、`Department`、`ProcessingFactory`、`FinishedProduct` 数据库表，全量开发了对应的增删改查 Node.js 接口，并在前端 `BasicData` 下新增了对应的 Vue 数据管理表格页面，完善了数据完整性校验。
+    - **出入库模块扩充**：废除了原出入库页面的纯前端 Mock 假数据。新增了 `FinishedProductInbound` (成品入库) 和 `FinishedProductOutbound` (成品出库) 模块的 API。
+    - **自动扣减库存流水**：出入库模块现已完全对接库存核心表（`Inventory`）。前端发起“审核通过”动作后，系统会自动更新对应库位的 `CurrentQuantity` 和 `AvailableQuantity`，并向 `InventoryTransaction` 表写入标准的出入库流水。
+    - **盘点模块重构**：将原料盘点和成品盘点拆分并对接真实的 `Stocktaking` API。实现了盘点单的审核结算逻辑：如果实际库存和系统库存有差异 (`DifferenceQuantity`)，系统在审核后会自动执行“盘盈/盘亏”并平账到当前库存。
+    - **系统设置与权限 (RBAC)**：完成了 `User`（用户管理）、`Role`（角色与权限分配树）、`OperationLog`（操作日志追溯）三个核心系统功能的前后端闭环。管理员可为员工分配动态角色，并按日期/模块查询系统的操作日志。
+
+---
+
+## 2026/04/22
+
+### 优化与功能完善
+    - 完善原料入库前端：实现了“详情”、“打印”、“审核”和“撤销”等功能的逻辑。详情现直接调用后台接口并以模态框展示，打印功能使用新窗口打印特定入库单样式。
+    - 修复首页链接：在 MainView.vue 中完善了 viewDetails 方法，实现首页图表卡片点击后正确跳转至各对应的列表页面。
+    - 修复库存管理详情：修复了由于 axios 响应拦截器直接返回 response 而导致的 detail 对象获取路径问题（`materialDetail.data.code`），使得原料库存详情对话框能够正确渲染展示。
+    - 修复库存管理编辑问题：更新了后端 `updateRawMaterial` 接口，在更新语句中加入 `MinStock`、`MaxStock` 以及 `Status` 字段，并移除了前端库存管理编辑表单中最大/小库存输入框的 `display: none` 隐藏样式。
+    - 解决仓位管理遗留问题：由于仓位管理页面已整体重写，原有添加仓位时的“原料选择 undefined”问题已被新版库位生命周期管理设计覆盖且不再出现。
+    - 修复 LocationRawMaterial 中下拉框获取列表时的 `.map` 报错问题。
+
+---
+
 ## 2025/06/17
 
 ### 增加 \server\index.js 后端接口

@@ -195,7 +195,10 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
+
+const router = useRouter()
 
 // 响应式数据
 const activeTab = ref('inventory')
@@ -358,8 +361,15 @@ let warningChart = null
 
 // 方法
 const viewDetails = (type) => {
-  console.log('查看详情:', type)
-  // 这里可以实现跳转到详情页面
+  if (type === 'pending_in') {
+    router.push({ name: 'InStorageRawMaterial' })
+  } else if (type === 'pending_out') {
+    router.push({ name: 'OutStorageRawMaterial' })
+  } else if (type === 'inventory_warning' || type === 'inventory_count') {
+    router.push({ name: 'InventoryRawMaterial' })
+  } else {
+    console.log('查看详情:', type)
+  }
 }
 
 const updateWarningChart = () => {

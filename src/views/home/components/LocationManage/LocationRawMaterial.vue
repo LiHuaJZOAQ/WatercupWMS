@@ -623,8 +623,9 @@ const getWarehouseOptions = async () => {
       method: 'get'
     })
     
-    if (response.data) {
-      warehouseOptions.value = response.data.map(item => ({
+    const resData = response.data?.data || response.data || []
+    if (Array.isArray(resData)) {
+      warehouseOptions.value = resData.map(item => ({
         value: item.id,
         label: item.name
       }))

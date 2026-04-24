@@ -200,26 +200,32 @@ service.interceptors.response.use(
 
 ## 🚀 快速开始
 
-### 环境要求
-```bash
-Node.js >= 16.0.0
-npm >= 8.0.0
-```
+### 1. 数据库准备
+* 安装 MySQL (推荐版本 8.0+)
+* 创建数据库 `watercupwms` (字符集 `utf8mb4`)
+* 执行根目录下的 `watercupwms.sql` 导入所有表结构和初始数据
+* （可选）修改 `server/index.js` 中的数据库连接配置（默认 `user: root`, `password: password`）
 
-### 安装与运行
+### 2. 安装依赖并一键启动
+本项目已配置 `concurrently`，可以通过一条命令同时启动 Vue 前端和 Node 后端服务。
+
 ```bash
-# 安装依赖
+# 1. 安装项目依赖
 npm install
 
-# 开发环境启动
+# 2. 进入 server 目录安装后端依赖
+cd server
+npm install
+cd ..
+
+# 3. 一键启动前后端服务
 npm run dev
-
-# 生产环境构建
-npm run build
-
-# 类型检查
-npm run type-check
 ```
+
+* **前端访问地址**: `http://localhost:5173`
+* **后端 API 地址**: `http://localhost:3000`
+* **默认登录账号**: `admin`
+* **默认登录密码**: `admin123`
 
 ## 📊 数据流架构
 

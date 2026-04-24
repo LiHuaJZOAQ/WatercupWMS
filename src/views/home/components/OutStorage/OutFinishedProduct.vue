@@ -1,7 +1,5 @@
-
 <template>
   <div class="erp-container">
-    <!-- 查询条件区域 -->
     <div class="filter-card">
       <div class="filter-row">
         <div class="filter-col">
@@ -32,17 +30,12 @@
       </div>
     </div>
 
-    <!-- 操作按钮区域 -->
     <div class="action-card">
       <el-button class="action-btn" type="success" @click="handleCreate">
         <i class="el-icon-plus"></i> 新建
       </el-button>
-      <el-button class="action-btn" type="primary" @click="handlePrint">
-        <i class="el-icon-printer"></i> 打印
-      </el-button>
     </div>
 
-    <!-- 表格数据区域 -->
     <div class="data-container">
       <el-table
         :data="tableData"
@@ -61,10 +54,9 @@
             {{ getTypeText(row.type) }}
           </template>
         </el-table-column>
-        <el-table-column prop="departmentName" label="领用部门" min-width="120" />
+        <el-table-column prop="customerName" label="客户" min-width="150" />
         <el-table-column prop="warehouseName" label="仓库" min-width="120" />
         <el-table-column prop="totalQuantity" label="总数量" width="120" align="right" />
-        <el-table-column prop="totalAmount" label="总金额" width="120" align="right" />
         <el-table-column prop="operatorName" label="操作人" width="120" />
         <el-table-column prop="outboundDate" label="出库时间" width="180" />
         <el-table-column label="状态" width="100">
@@ -100,7 +92,6 @@
       </el-table>
     </div>
 
-    <!-- 分页 -->
     <div class="pagination-container">
       <el-pagination
         v-model:current-page="currentPage"
@@ -114,7 +105,7 @@
     </div>
 
     <!-- 详情弹窗 -->
-    <el-dialog title="出库单详情" v-model="detailsDialogVisible" width="60%">
+    <el-dialog title="成品出库单详情" v-model="detailsDialogVisible" width="60%">
       <div v-if="detailsData" class="details-content">
         <el-descriptions title="基础信息" :column="2" border>
           <el-descriptions-item label="出库单号">{{ detailsData.outboundNo }}</el-descriptions-item>
@@ -124,18 +115,18 @@
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="出库类型">{{ getTypeText(detailsData.type) }}</el-descriptions-item>
-          <el-descriptions-item label="领用部门">{{ detailsData.departmentName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="客户">{{ detailsData.customerName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="订单号">{{ detailsData.orderNumber || '-' }}</el-descriptions-item>
           <el-descriptions-item label="仓库">{{ detailsData.warehouseName || '-' }}</el-descriptions-item>
           <el-descriptions-item label="操作人">{{ detailsData.operatorName || '-' }}</el-descriptions-item>
           <el-descriptions-item label="出库时间">{{ detailsData.outboundDate }}</el-descriptions-item>
-          <el-descriptions-item label="总金额">{{ detailsData.totalAmount }} 元</el-descriptions-item>
           <el-descriptions-item label="备注" :span="2">{{ detailsData.remarks || '无' }}</el-descriptions-item>
         </el-descriptions>
 
         <h4 style="margin-top: 20px;">出库明细</h4>
         <el-table :data="detailsData.details" border stripe style="width: 100%; margin-top: 10px;">
-          <el-table-column prop="materialName" label="原料名称" />
-          <el-table-column prop="materialCode" label="原料编号" />
+          <el-table-column prop="productName" label="成品名称" />
+          <el-table-column prop="productCode" label="成品编号" />
           <el-table-column prop="specification" label="规格" />
           <el-table-column prop="quantity" label="出库数量" align="right" />
           <el-table-column prop="unit" label="单位" width="80" />
@@ -165,17 +156,13 @@
         <el-button type="primary" @click="confirmAudit">确定</el-button>
       </template>
     </el-dialog>
-
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { useRouter } from 'vue-router';
 import api from '@/api';
-
-const router = useRouter();
 
 const filter = reactive({
   outboundNo: '',
@@ -218,7 +205,7 @@ const getStatusTagType = (status) => {
 
 const getTypeText = (type) => {
   const map = {
-    Production: '生产领料',
+    Sale: '销售',
     Transfer: '调拨',
     Return: '退货',
     Other: '其他'
@@ -236,12 +223,12 @@ const fetchData = async () => {
       pageSize: pageSize.value,
       ...filter
     };
-    const res = await api.getOutboundOrders(params);
+    const res = await api.getFinishedOutbounds(params);
     tableData.value = res.data?.items || [];
     total.value = res.data?.total || 0;
   } catch (error) {
     console.error(error);
-    ElMessage.error('获取出库单列表失败');
+    ElMessage.error('获取列表失败');
   } finally {
     loading.value = false;
   }
@@ -267,17 +254,17 @@ const handleCurrentChange = (val) => {
 };
 
 const handleCreate = () => {
-  ElMessage.warning('新建出库单页面暂未实现');
+  ElMessage.warning('新建成品出库单功能暂未实现');
 };
 
 const handleDetails = async (row) => {
   try {
-    const res = await api.getOutboundOrderDetail(row.id);
+    const res = await api.getFinishedOutboundDetail(row.id);
     detailsData.value = res.data;
     detailsDialogVisible.value = true;
   } catch (error) {
     console.error(error);
-    ElMessage.error('获取出库单详情失败');
+    ElMessage.error('获取详情失败');
   }
 };
 
@@ -293,7 +280,7 @@ const confirmAudit = async () => {
     return ElMessage.warning('驳回时必须填写审核意见');
   }
   try {
-    await api.auditOutboundOrder(auditForm.id, {
+    await api.auditFinishedOutbound(auditForm.id, {
       action: auditForm.action,
       reason: auditForm.reason
     });
@@ -308,34 +295,24 @@ const confirmAudit = async () => {
 
 const handleRevoke = async (row) => {
   try {
-    await ElMessageBox.confirm(`确定要撤销出库单 ${row.outboundNo} 吗？`, '提示', { type: 'warning' });
-    await api.revokeOutboundOrder(row.id);
+    await ElMessageBox.confirm(`确定要撤销出库单 \${row.outboundNo} 吗？`, '提示', { type: 'warning' });
+    await api.revokeFinishedOutbound(row.id);
     ElMessage.success('撤销成功');
     fetchData();
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error(error);
-      ElMessage.error('撤销失败');
-    }
+    if (error !== 'cancel') ElMessage.error('撤销失败');
   }
 };
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm(`确定要删除出库单 ${row.outboundNo} 吗？此操作不可恢复。`, '危险操作', { type: 'error' });
-    await api.deleteOutboundOrder(row.id);
+    await ElMessageBox.confirm(`确定要删除出库单 \${row.outboundNo} 吗？此操作不可恢复。`, '危险操作', { type: 'error' });
+    await api.deleteFinishedOutbound(row.id);
     ElMessage.success('删除成功');
     fetchData();
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error(error);
-      ElMessage.error('删除失败');
-    }
+    if (error !== 'cancel') ElMessage.error('删除失败');
   }
-};
-
-const handlePrint = () => {
-  ElMessage.info('打印功能暂未实现');
 };
 
 onMounted(() => {
@@ -347,12 +324,10 @@ onMounted(() => {
 .erp-container {
   display: flex;
   flex-direction: column;
-  font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
   background-color: #f0f2f5;
   padding: 16px;
   min-height: 100vh;
 }
-
 .filter-card {
   background-color: #fff;
   border-radius: 8px;
@@ -389,14 +364,12 @@ onMounted(() => {
     gap: 12px;
   }
 }
-
 .action-card {
   display: flex;
   justify-content: flex-start;
   margin-bottom: 16px;
   gap: 12px;
 }
-
 .data-container {
   background-color: #fff;
   border-radius: 8px;
@@ -405,28 +378,13 @@ onMounted(() => {
   flex-grow: 1;
 
   ::v-deep(.el-table) {
-    border-radius: 8px;
-    overflow: hidden;
-    
-    th.el-table__cell {
-      background-color: #fafafa;
-      color: #333;
-      font-weight: 600;
-    }
-    
     .even-row { background-color: #fafafa; }
     .odd-row { background-color: #ffffff; }
-    .even-row:hover, .odd-row:hover { background-color: #e6f7ff; }
   }
 }
-
 .pagination-container {
   display: flex;
   justify-content: flex-end;
   padding: 20px 0;
-}
-
-.details-content {
-  padding: 0 20px;
 }
 </style>

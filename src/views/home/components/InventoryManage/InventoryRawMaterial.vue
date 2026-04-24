@@ -182,13 +182,13 @@
                 </el-form-item>
                 <el-row :gutter="20">
                     <el-col :span="12">
-                        <el-form-item label="最小库存" prop="minStock" style="display: none;">
+                        <el-form-item label="最小库存" prop="minStock">
                             <el-input-number v-model="currentMaterial.minStock" :min="0" :precision="2" 
                                 style="width: 100%" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="最大库存" prop="maxStock" style="display: none;">
+                        <el-form-item label="最大库存" prop="maxStock">
                             <el-input-number v-model="currentMaterial.maxStock" :min="0" :precision="2" 
                                 style="width: 100%" />
                         </el-form-item>
@@ -285,7 +285,7 @@
                         <el-col :span="8">
                             <div class="detail-item">
                                 <span class="label">可用数量：</span>
-                                <span class="value">{{ formatStock(materialDetail.data.totalAvailable || materialDetail.stock || 0) }}</span>
+                                <span class="value">{{ formatStock(materialDetail.data.totalAvailable || materialDetail.data.stock || 0) }}</span>
                             </div>
                         </el-col>
                         <el-col :span="8">
@@ -297,8 +297,8 @@
                         <el-col :span="8">
                             <div class="detail-item">
                                 <span class="label">库存状态：</span>
-                                <el-tag :type="getStockStatusType(materialDetail)" size="small">
-                                    {{ getStockStatusText(materialDetail) }}
+                                <el-tag :type="getStockStatusType(materialDetail.data)" size="small">
+                                    {{ getStockStatusText(materialDetail.data) }}
                                 </el-tag>
                             </div>
                         </el-col>
