@@ -21,7 +21,7 @@
         <el-menu-item index="基础数据/客户管理">客户管理</el-menu-item>
         <el-menu-item index="基础数据/部门管理">部门管理</el-menu-item>
         <el-menu-item index="基础数据/加工厂管理">加工厂管理</el-menu-item>
-        <el-menu-item index="基础数据/成品档案">成品档案</el-menu-item>
+        <el-menu-item index="基础数据/商品档案">商品档案 (SKU)</el-menu-item>
       </el-sub-menu>
       <el-sub-menu index="入库管理">
         <template #title>
@@ -30,7 +30,7 @@
           </el-icon>
           <span>入库管理</span>
         </template>
-        <el-menu-item index="入库管理/原料入库">原料入库</el-menu-item>
+        <el-menu-item index="入库管理/通用入库单">入库单管理</el-menu-item>
         <el-menu-item index="入库管理/产品入库">产品入库</el-menu-item>
         <el-menu-item index="入库管理/其他入库">其他入库</el-menu-item>
       </el-sub-menu>
@@ -41,7 +41,7 @@
           </el-icon>
           <span>出库管理</span>
         </template>
-        <el-menu-item index="出库管理/原料出库">原料出库</el-menu-item>
+        <el-menu-item index="出库管理/通用出库单">出库单管理</el-menu-item>
         <el-menu-item index="出库管理/产品出库">产品出库</el-menu-item>
         <el-menu-item index="出库管理/其他出库">其他出库</el-menu-item>
         <el-menu-item index="出库管理/波次拣货">智能波次拣货 (推荐)</el-menu-item>
@@ -53,7 +53,7 @@
           </el-icon>
           <span>盘点管理</span>
         </template>
-        <el-menu-item index="盘点管理/原料盘点">原料盘点</el-menu-item>
+        <el-menu-item index="盘点管理/通用盘点">库存盘点作业</el-menu-item>
         <el-menu-item index="盘点管理/产品盘点">产品盘点</el-menu-item>
         <el-menu-item index="盘点管理/其他盘点">其他盘点</el-menu-item>
       </el-sub-menu>
@@ -64,7 +64,7 @@
           </el-icon>
           <span>库存管理</span>
         </template>
-        <el-menu-item index="库存管理/原料库存">原料库存</el-menu-item>
+        <el-menu-item index="库存管理/全局库存">全局库存查询</el-menu-item>
         <el-menu-item index="库存管理/产品库存">产品库存</el-menu-item>
         <el-menu-item index="库存管理/其他库存">其他库存</el-menu-item>
       </el-sub-menu>
@@ -77,7 +77,7 @@
         </template>
         <el-menu-item index="仓位管理/原料仓位">一般仓位</el-menu-item>
         <!-- <el-menu-item index="仓位管理/产品仓位">仓位</el-menu-item> -->
-        <el-menu-item index="仓位管理/其他仓位">其他仓位</el-menu-item>
+        
       </el-sub-menu>
       <el-sub-menu index="系统设置">
         <template #title>
@@ -142,7 +142,7 @@ const handleMenuClick = (index: string) => {
     sendChangeView("InStorageRawMaterial")
   } else if (index === "入库管理/产品入库") {
     sendChangeView("InStorageFinishedProduct")
-  } else if (index === '出库管理/原料出库') {
+  } else if (index === '出库管理/通用出库单') {
     sendChangeView('OutStorageRawMaterial')
   } else if (index === '出库管理/成品出库') {
     sendChangeView('OutStorageFinishedProduct')
@@ -150,13 +150,13 @@ const handleMenuClick = (index: string) => {
     sendChangeView('OutStorageFinishedProduct')
   } else if (index === '出库管理/波次拣货') {
     sendChangeView('WavePicking')
-  } else if (index === '盘点管理/原料盘点') {
+  } else if (index === '盘点管理/通用盘点') {
     sendChangeView('CheckStorageRawMaterial')
   } else if (index === '盘点管理/产品盘点') {
     sendChangeView('CheckStorageFinishedProduct')
-  } else if (index === '库存管理/原料库存') {
+  } else if (index === '库存管理/全局库存') {
     sendChangeView('InventoryRawMaterial')
-  } else if (index === '仓位管理/原料仓位') {
+  } else if (index === '仓位管理/仓库库位') {
     sendChangeView('LocationRawMaterial')
   } else if (index === '系统设置/用户管理') {
     sendChangeView('UserManage')

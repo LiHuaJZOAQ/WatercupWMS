@@ -23,72 +23,52 @@ const router = createRouter({
         {
           path: '/inStorage/rawMaterial',
           name: 'InStorageRawMaterial',
-          component: () => import('../views/home/components/InStorage/RawMaterial.vue'),
+          component: () => import('../views/home/components/InStorage/InboundOrder.vue'),
         },
         {
           path: '/inStorage/rawMaterial/review',
           name: 'InStorageRawMaterialReview',
           component: () => import('../views/home/components/InStorage/Review.vue'),
         },
-        {
-          path: '/inStorage/finishedProduct',
-          name: 'InStorageFinishedProduct',
-          component: () => import('../views/home/components/InStorage/FinishedProduct.vue'),
-        },
+        
         {
           path: '/outStorage/rawMaterial',
           name: 'OutStorageRawMaterial',
-          component: () => import('../views/home/components/OutStorage/OutRawMaterial.vue'),
+          component: () => import('../views/home/components/OutStorage/OutboundOrder.vue'),
         },
-        {
-          path: '/outStorage/finishedProduct',
-          name: 'OutStorageFinishedProduct',
-          component: () => import('../views/home/components/OutStorage/OutFinishedProduct.vue'),
-        },
+        
         {
           path: '/checkStorage/rawMaterial',
           name: 'CheckStorageRawMaterial',
-          component: () => import('../views/home/components/CheckStorage/CheckRawMaterial.vue'),
+          component: () => import('../views/home/components/CheckStorage/Stocktaking.vue'),
         },
-        {
-          path: '/checkStorage/finishedProduct',
-          name: 'CheckStorageFinishedProduct',
-          component: () => import('../views/home/components/CheckStorage/CheckFinishedProduct.vue'),
-        },
+        
         {
           path: '/inventory/rawMaterial',
           name: 'InventoryRawMaterial',
-          component: () => import('../views/home/components/InventoryManage/InventoryRawMaterial.vue'),
+          component: () => import('../views/home/components/InventoryManage/Inventory.vue'),
         },
         {
           path: '/location/rawMaterial',
           name: 'LocationRawMaterial',
-          component: () => import('../views/home/components/LocationManage/LocationRawMaterial.vue'),
+          component: () => import('../views/home/components/LocationManage/Location.vue'),
         },
         {
           path: '/basicData/supplier',
           name: 'SupplierManage',
-          component: () => import('../views/home/components/BasicData/Supplier.vue'),
+          component: () => import('../views/home/components/BasicData/Partner.vue'),
         },
-        {
-          path: '/basicData/customer',
-          name: 'CustomerManage',
-          component: () => import('../views/home/components/BasicData/Customer.vue'),
-        },
+        
         {
           path: '/basicData/department',
           name: 'DepartmentManage',
           component: () => import('../views/home/components/BasicData/Department.vue'),
         },
-        {
-          path: '/basicData/processingFactory',
-          name: 'ProcessingFactoryManage',
-          component: () => import('../views/home/components/BasicData/ProcessingFactory.vue'),
-        },
+        
         {
           path: '/basicData/finishedProduct',
           name: 'FinishedProductManage',
-          component: () => import('../views/home/components/BasicData/FinishedProduct.vue'),
+          component: () => import('../views/home/components/BasicData/Item.vue'),
         },
         {
           path: '/system/user',
