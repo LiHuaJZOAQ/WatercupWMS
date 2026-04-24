@@ -3,15 +3,13 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 
 // ====================================
 // 盘点管理接口
 // ====================================
 
 
-router.get('/api/stocktaking', async (req, res) => {
+router.get('/stocktaking', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, stocktakingNo, type, status, itemType } = req.query;
     let whereConditions = [];
@@ -64,7 +62,7 @@ router.get('/api/stocktaking', async (req, res) => {
   }
 });
 
-router.get('/api/stocktaking/:id', async (req, res) => {
+router.get('/stocktaking/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const sql = `
@@ -118,7 +116,7 @@ router.get('/api/stocktaking/:id', async (req, res) => {
   }
 });
 
-router.put('/api/stocktaking/:id/audit', async (req, res) => {
+router.put('/stocktaking/:id/audit', async (req, res) => {
   try {
     const { id } = req.params;
     const { action, reason } = req.body;
@@ -196,7 +194,7 @@ router.put('/api/stocktaking/:id/audit', async (req, res) => {
   }
 });
 
-router.delete('/api/stocktaking/:id', async (req, res) => {
+router.delete('/stocktaking/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const checkResult = await executeQuery('SELECT Status FROM Stocktaking WHERE StocktakingID = ?', [id]);
@@ -211,7 +209,7 @@ router.delete('/api/stocktaking/:id', async (req, res) => {
 });
 
 // 1. 获取库位列表（重写版本）
-router.get('/api/locations/list',  async (req, res) => {
+router.get('/locations/list',  async (req, res) => {
   try {
     console.log('获取库位列表 - 参数:', req.query);
     
@@ -386,7 +384,7 @@ router.get('/api/locations/list',  async (req, res) => {
 });
 
 // 2. 获取库位详情
-router.get('/api/locations/:locationCode',  async (req, res) => {
+router.get('/locations/:locationCode',  async (req, res) => {
   try {
     const { locationCode } = req.params;
     console.log(`获取库位详情 - 库位编号: ${locationCode}`);
@@ -475,7 +473,7 @@ router.get('/api/locations/:locationCode',  async (req, res) => {
 });
 
 // 3. 新增库位
-router.post('/api/locations',  async (req, res) => {
+router.post('/locations',  async (req, res) => {
   try {
     console.log('新增库位 - 参数:', req.body);
     
@@ -551,7 +549,7 @@ router.post('/api/locations',  async (req, res) => {
 });
 
 // 4. 更新库位
-router.put('/api/locations/:locationCode',  async (req, res) => {
+router.put('/locations/:locationCode',  async (req, res) => {
   try {
     const { locationCode } = req.params;
     console.log(`更新库位 - 库位编号: ${locationCode}`, req.body);
@@ -622,7 +620,7 @@ router.put('/api/locations/:locationCode',  async (req, res) => {
 });
 
 // 5. 删除库位
-router.delete('/api/locations/:locationCode',  async (req, res) => {
+router.delete('/locations/:locationCode',  async (req, res) => {
   try {
     const { locationCode } = req.params;
     console.log(`删除库位 - 库位编号: ${locationCode}`);
@@ -672,7 +670,7 @@ router.delete('/api/locations/:locationCode',  async (req, res) => {
 });
 
 // 6. 批量删除库位
-router.delete('/api/locations/batch-delete',  async (req, res) => {
+router.delete('/locations/batch-delete',  async (req, res) => {
   try {
     const { locationCodes } = req.body;
     console.log('批量删除库位 - 库位编号:', locationCodes);
@@ -741,7 +739,7 @@ router.delete('/api/locations/batch-delete',  async (req, res) => {
 });
 
 // 7. 更新库位状态
-router.put('/api/locations/:locationCode/status',  async (req, res) => {
+router.put('/locations/:locationCode/status',  async (req, res) => {
   try {
     const { locationCode } = req.params;
     const { status } = req.body;
@@ -781,7 +779,7 @@ router.put('/api/locations/:locationCode/status',  async (req, res) => {
 });
 
 // 8. 获取仓库选项
-router.get('/api/warehouses/options',  async (req, res) => {
+router.get('/warehouses/options',  async (req, res) => {
   try {
     console.log('获取仓库选项');
 
@@ -807,7 +805,7 @@ router.get('/api/warehouses/options',  async (req, res) => {
 });
 
 // 9. 导出库位数据
-router.get('/api/locations/export',  async (req, res) => {
+router.get('/locations/export',  async (req, res) => {
   try {
     console.log('导出库位数据 - 开始');
     
@@ -973,7 +971,7 @@ router.get('/api/locations/export',  async (req, res) => {
 });
 
 // 10. 获取库位统计数据
-router.get('/api/locations/statistics',  async (req, res) => {
+router.get('/locations/statistics',  async (req, res) => {
   try {
     console.log('获取库位统计数据');
 
@@ -1100,7 +1098,7 @@ router.get('/api/locations/statistics',  async (req, res) => {
 });
 
 // 11. 库位占用情况更新（系统内部调用）
-router.put('/api/locations/:locationCode/occupancy',  async (req, res) => {
+router.put('/locations/:locationCode/occupancy',  async (req, res) => {
   try {
     const { locationCode } = req.params;
     console.log(`更新库位占用情况 - 库位编号: ${locationCode}`);
@@ -1152,7 +1150,7 @@ router.put('/api/locations/:locationCode/occupancy',  async (req, res) => {
 });
 
 // 12. 批量更新库位占用情况（定时任务或手动触发）
-router.post('/api/locations/refresh-occupancy',  async (req, res) => {
+router.post('/locations/refresh-occupancy',  async (req, res) => {
   try {
     console.log('批量更新库位占用情况 - 开始');
 

@@ -1,7 +1,7 @@
 const { verify } = require('jsonwebtoken');
 const { errorResponse } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
+const { JWT_SECRET } = require('../config/env');
 
 const authenticateToken = (req, res, next) => {
   // Allow login route to bypass authentication

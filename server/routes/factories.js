@@ -3,13 +3,11 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 基础数据 - 加工厂管理接口
 // ====================================
 
-router.get('/api/factories', async (req, res) => {
+router.get('/factories', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, keyword, status } = req.query;
     let whereConditions = [];
@@ -48,7 +46,7 @@ router.get('/api/factories', async (req, res) => {
   }
 });
 
-router.post('/api/factories', async (req, res) => {
+router.post('/factories', async (req, res) => {
   try {
     const { code, name, contactPerson, contactPhone, address, status = 1 } = req.body;
     const validation = validateRequired({ code, name }, ['code', 'name']);
@@ -67,7 +65,7 @@ router.post('/api/factories', async (req, res) => {
   }
 });
 
-router.put('/api/factories/:id', async (req, res) => {
+router.put('/factories/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { code, name, contactPerson, contactPhone, address, status } = req.body;
@@ -87,7 +85,7 @@ router.put('/api/factories/:id', async (req, res) => {
   }
 });
 
-router.delete('/api/factories/:id', async (req, res) => {
+router.delete('/factories/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const checkRel = await executeQuery('SELECT InboundID FROM FinishedProductInbound WHERE FactoryID = ? LIMIT 1', [id]);

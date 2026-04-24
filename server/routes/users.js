@@ -1,18 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
+const { JWT_SECRET } = require('../config/env');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 const { compare } = require('bcrypt');
 const { sign, verify } = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
 
 // ====================================
 // 用户认证接口
 // ====================================
 
 // 用户登录
-router.post('/api/users/login', async (req, res) => {
+router.post('/users/login', async (req, res) => {
   const { username, password } = req.body;
   
   if (!username || !password) {
@@ -79,7 +78,7 @@ router.post('/api/users/login', async (req, res) => {
 });
 
 // 获取用户信息
-router.get('/api/users/info',  async (req, res) => {
+router.get('/users/info',  async (req, res) => {
   try {
     const [rows] = await pool.execute(
       'SELECT UserID, Username, FullName, Email, Department, Position FROM User WHERE UserID = ?',

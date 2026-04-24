@@ -3,13 +3,11 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 基础数据 - 客户管理接口
 // ====================================
 
-router.get('/api/customers', async (req, res) => {
+router.get('/customers', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, keyword, status } = req.query;
     let whereConditions = [];
@@ -52,7 +50,7 @@ router.get('/api/customers', async (req, res) => {
   }
 });
 
-router.post('/api/customers', async (req, res) => {
+router.post('/customers', async (req, res) => {
   try {
     const { code, name, contactPerson, contactPhone, email, address, status = 1 } = req.body;
     const validation = validateRequired({ code, name }, ['code', 'name']);
@@ -72,7 +70,7 @@ router.post('/api/customers', async (req, res) => {
   }
 });
 
-router.put('/api/customers/:id', async (req, res) => {
+router.put('/customers/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { code, name, contactPerson, contactPhone, email, address, status } = req.body;
@@ -92,7 +90,7 @@ router.put('/api/customers/:id', async (req, res) => {
   }
 });
 
-router.delete('/api/customers/:id', async (req, res) => {
+router.delete('/customers/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const checkRel = await executeQuery('SELECT OutboundID FROM FinishedProductOutbound WHERE CustomerID = ? LIMIT 1', [id]);

@@ -3,13 +3,11 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 成品出库管理接口
 // ====================================
 
-router.get('/api/finished-outbounds/options', async (req, res) => {
+router.get('/finished-outbounds/options', async (req, res) => {
   try {
     const result = await executeQuery('SELECT DISTINCT OutboundNumber as value, OutboundNumber as label FROM FinishedProductOutbound ORDER BY OutboundNumber DESC');
     res.json(successResponse({ outboundNumbers: result }));
@@ -18,7 +16,7 @@ router.get('/api/finished-outbounds/options', async (req, res) => {
   }
 });
 
-router.get('/api/finished-outbounds', async (req, res) => {
+router.get('/finished-outbounds', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, outboundNo, status, startDate, endDate } = req.query;
     let whereConditions = [];
@@ -76,7 +74,7 @@ router.get('/api/finished-outbounds', async (req, res) => {
   }
 });
 
-router.get('/api/finished-outbounds/:id', async (req, res) => {
+router.get('/finished-outbounds/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const sql = `
@@ -117,7 +115,7 @@ router.get('/api/finished-outbounds/:id', async (req, res) => {
   }
 });
 
-router.put('/api/finished-outbounds/:id/audit', async (req, res) => {
+router.put('/finished-outbounds/:id/audit', async (req, res) => {
   try {
     const { id } = req.params;
     const { action, reason } = req.body;
@@ -173,7 +171,7 @@ router.put('/api/finished-outbounds/:id/audit', async (req, res) => {
   }
 });
 
-router.put('/api/finished-outbounds/:id/revoke', async (req, res) => {
+router.put('/finished-outbounds/:id/revoke', async (req, res) => {
   try {
     const { id } = req.params;
     const checkResult = await executeQuery('SELECT * FROM FinishedProductOutbound WHERE OutboundID = ?', [id]);
@@ -190,7 +188,7 @@ router.put('/api/finished-outbounds/:id/revoke', async (req, res) => {
   }
 });
 
-router.delete('/api/finished-outbounds/:id', async (req, res) => {
+router.delete('/finished-outbounds/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const checkResult = await executeQuery('SELECT Status FROM FinishedProductOutbound WHERE OutboundID = ?', [id]);

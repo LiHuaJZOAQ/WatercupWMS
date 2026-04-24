@@ -3,13 +3,11 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 成品入库管理接口
 // ====================================
 
-router.get('/api/finished-inbounds/options', async (req, res) => {
+router.get('/finished-inbounds/options', async (req, res) => {
   try {
     const result = await executeQuery('SELECT DISTINCT InboundNumber as value, InboundNumber as label FROM FinishedProductInbound ORDER BY InboundNumber DESC');
     res.json(successResponse({ inboundNumbers: result }));
@@ -18,7 +16,7 @@ router.get('/api/finished-inbounds/options', async (req, res) => {
   }
 });
 
-router.get('/api/finished-inbounds', async (req, res) => {
+router.get('/finished-inbounds', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, inboundNo, status, startDate, endDate } = req.query;
     let whereConditions = [];
@@ -76,7 +74,7 @@ router.get('/api/finished-inbounds', async (req, res) => {
   }
 });
 
-router.get('/api/finished-inbounds/:id', async (req, res) => {
+router.get('/finished-inbounds/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const sql = `
@@ -117,7 +115,7 @@ router.get('/api/finished-inbounds/:id', async (req, res) => {
   }
 });
 
-router.put('/api/finished-inbounds/:id/audit', async (req, res) => {
+router.put('/finished-inbounds/:id/audit', async (req, res) => {
   try {
     const { id } = req.params;
     const { action, reason } = req.body;
@@ -182,7 +180,7 @@ router.put('/api/finished-inbounds/:id/audit', async (req, res) => {
   }
 });
 
-router.put('/api/finished-inbounds/:id/revoke', async (req, res) => {
+router.put('/finished-inbounds/:id/revoke', async (req, res) => {
   try {
     const { id } = req.params;
     const checkResult = await executeQuery('SELECT * FROM FinishedProductInbound WHERE InboundID = ?', [id]);
@@ -199,7 +197,7 @@ router.put('/api/finished-inbounds/:id/revoke', async (req, res) => {
   }
 });
 
-router.delete('/api/finished-inbounds/:id', async (req, res) => {
+router.delete('/finished-inbounds/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const checkResult = await executeQuery('SELECT Status FROM FinishedProductInbound WHERE InboundID = ?', [id]);

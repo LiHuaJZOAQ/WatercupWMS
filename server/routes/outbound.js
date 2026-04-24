@@ -4,14 +4,12 @@ const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 const moment = require('moment');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 原料出库管理接口
 // ====================================
 
 // 1. 获取出库单筛选选项
-router.get('/api/outbound-orders/options', async (req, res) => {
+router.get('/outbound-orders/options', async (req, res) => {
   try {
     const numbersResult = await executeQuery(
       'SELECT DISTINCT OutboundNumber as value, OutboundNumber as label FROM RawMaterialOutbound ORDER BY OutboundNumber DESC'
@@ -24,7 +22,7 @@ router.get('/api/outbound-orders/options', async (req, res) => {
 });
 
 // 2. 获取出库单列表
-router.get('/api/outbound-orders', async (req, res) => {
+router.get('/outbound-orders', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, outboundNo, status, startDate, endDate } = req.query;
     let whereConditions = [];
@@ -107,7 +105,7 @@ router.get('/api/outbound-orders', async (req, res) => {
 });
 
 // 3. 获取出库单详情
-router.get('/api/outbound-orders/:id', async (req, res) => {
+router.get('/outbound-orders/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -178,7 +176,7 @@ router.get('/api/outbound-orders/:id', async (req, res) => {
 });
 
 // 4. 审核出库单 (扣减库存)
-router.put('/api/outbound-orders/:id/audit', async (req, res) => {
+router.put('/outbound-orders/:id/audit', async (req, res) => {
   try {
     const { id } = req.params;
     const { action, reason } = req.body; // action: approve / reject
@@ -254,7 +252,7 @@ router.put('/api/outbound-orders/:id/audit', async (req, res) => {
 });
 
 // 5. 撤销出库单
-router.put('/api/outbound-orders/:id/revoke', async (req, res) => {
+router.put('/outbound-orders/:id/revoke', async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -286,7 +284,7 @@ router.put('/api/outbound-orders/:id/revoke', async (req, res) => {
 });
 
 // 6. 删除出库单
-router.delete('/api/outbound-orders/:id', async (req, res) => {
+router.delete('/outbound-orders/:id', async (req, res) => {
   try {
     const { id } = req.params;
 

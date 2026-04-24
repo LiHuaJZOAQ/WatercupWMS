@@ -3,13 +3,11 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 系统设置 - 操作日志接口
 // ====================================
 
-router.get('/api/operation-logs', async (req, res) => {
+router.get('/operation-logs', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, username, operationType, moduleName, startDate, endDate } = req.query;
     let whereConditions = [];

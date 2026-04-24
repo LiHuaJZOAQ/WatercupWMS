@@ -611,6 +611,6 @@ CREATE TABLE `WaveDetail` (
   PRIMARY KEY (`WaveDetailID`),
   KEY `fk_WaveDetail_Wave1_idx` (`WaveID`),
   KEY `fk_WaveDetail_Outbound1_idx` (`OutboundID`),
-  CONSTRAINT `fk_WaveDetail_Wave1` FOREIGN KEY (`WaveID`) REFERENCES `Wave` (`WaveID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_WaveDetail_Outbound1` FOREIGN KEY (`OutboundID`) REFERENCES `RawMaterialOutbound` (`OutboundID`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `fk_WaveDetail_Wave1` FOREIGN KEY (`WaveID`) REFERENCES `Wave` (`WaveID`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_WaveDetail_Outbound1` FOREIGN KEY (`OutboundID`) REFERENCES `RawMaterialOutbound` (`OutboundID`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='波次明细表(关联出库单)';

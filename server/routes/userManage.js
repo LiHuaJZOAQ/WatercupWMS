@@ -4,13 +4,11 @@ const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 const { compare } = require('bcrypt');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 系统设置 - 用户管理接口
 // ====================================
 
-router.get('/api/users', async (req, res) => {
+router.get('/users', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, keyword, status } = req.query;
     let whereConditions = [];
@@ -64,7 +62,7 @@ router.get('/api/users', async (req, res) => {
   }
 });
 
-router.post('/api/users', async (req, res) => {
+router.post('/users', async (req, res) => {
   try {
     const { username, password, email, fullName, phone, department, position, isActive = 1, roleIds = [] } = req.body;
     const validation = validateRequired({ username, password }, ['username', 'password']);
@@ -97,7 +95,7 @@ router.post('/api/users', async (req, res) => {
   }
 });
 
-router.put('/api/users/:id', async (req, res) => {
+router.put('/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { email, fullName, phone, department, position, isActive, roleIds } = req.body;
@@ -122,7 +120,7 @@ router.put('/api/users/:id', async (req, res) => {
   }
 });
 
-router.delete('/api/users/:id', async (req, res) => {
+router.delete('/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
     if (id == 1) return res.status(400).json(errorResponse('系统默认管理员无法删除', 400));

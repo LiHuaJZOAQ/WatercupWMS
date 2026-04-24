@@ -3,13 +3,11 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 系统设置 - 角色与权限接口
 // ====================================
 
-router.get('/api/roles', async (req, res) => {
+router.get('/roles', async (req, res) => {
   try {
     const sql = 'SELECT RoleID as id, RoleName as name, Description as description, IsSystem as isSystem, CreatedAt as createdAt FROM Role ORDER BY RoleID ASC';
     const results = await executeQuery(sql);
@@ -33,7 +31,7 @@ router.get('/api/roles', async (req, res) => {
   }
 });
 
-router.post('/api/roles', async (req, res) => {
+router.post('/roles', async (req, res) => {
   try {
     const { name, description, permissionIds = [] } = req.body;
     const validation = validateRequired({ name }, ['name']);
@@ -58,7 +56,7 @@ router.post('/api/roles', async (req, res) => {
   }
 });
 
-router.put('/api/roles/:id', async (req, res) => {
+router.put('/roles/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, permissionIds } = req.body;
@@ -82,7 +80,7 @@ router.put('/api/roles/:id', async (req, res) => {
   }
 });
 
-router.delete('/api/roles/:id', async (req, res) => {
+router.delete('/roles/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const checkRole = await executeQuery('SELECT IsSystem FROM Role WHERE RoleID = ?', [id]);
@@ -96,7 +94,7 @@ router.delete('/api/roles/:id', async (req, res) => {
   }
 });
 
-router.get('/api/permissions', async (req, res) => {
+router.get('/permissions', async (req, res) => {
   try {
     const sql = 'SELECT PermissionID as id, PermissionCode as code, PermissionName as name, ModuleName as module, ParentID as parentId FROM Permission ORDER BY ParentID ASC, SortOrder ASC';
     const results = await executeQuery(sql);

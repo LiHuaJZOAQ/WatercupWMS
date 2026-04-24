@@ -3,13 +3,11 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 基础数据 - 部门管理接口
 // ====================================
 
-router.get('/api/departments', async (req, res) => {
+router.get('/departments', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, keyword, status } = req.query;
     let whereConditions = [];
@@ -47,7 +45,7 @@ router.get('/api/departments', async (req, res) => {
   }
 });
 
-router.post('/api/departments', async (req, res) => {
+router.post('/departments', async (req, res) => {
   try {
     const { code, name, description, status = 1 } = req.body;
     const validation = validateRequired({ code, name }, ['code', 'name']);
@@ -66,7 +64,7 @@ router.post('/api/departments', async (req, res) => {
   }
 });
 
-router.put('/api/departments/:id', async (req, res) => {
+router.put('/departments/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { code, name, description, status } = req.body;
@@ -86,7 +84,7 @@ router.put('/api/departments/:id', async (req, res) => {
   }
 });
 
-router.delete('/api/departments/:id', async (req, res) => {
+router.delete('/departments/:id', async (req, res) => {
   try {
     const { id } = req.params;
     // const checkRel = await executeQuery('SELECT OutboundID FROM RawMaterialOutbound WHERE DepartmentID = ? LIMIT 1', [id]);

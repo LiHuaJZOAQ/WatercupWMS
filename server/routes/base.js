@@ -3,14 +3,12 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 基础接口
 // ====================================
 
 // 测试数据库连接
-router.get('/api/test', async (req, res) => {
+router.get('/test', async (req, res) => {
   try {
     const connection = await pool.getConnection();
     connection.release();

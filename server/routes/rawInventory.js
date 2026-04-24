@@ -3,14 +3,12 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 原料库存管理接口
 // ====================================
 
 // 1. 获取原料库存列表
-router.get('/api/inventory/raw-materials',  async (req, res) => {
+router.get('/inventory/raw-materials',  async (req, res) => {
   try {
     console.log('获取原料库存列表 - 参数:', req.query);
     
@@ -147,7 +145,7 @@ router.get('/api/inventory/raw-materials',  async (req, res) => {
 });
 
 // 2. 获取原料库存详情
-router.get('/api/inventory/raw-materials/:id',  async (req, res) => {
+router.get('/inventory/raw-materials/:id',  async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`获取原料库存详情 - ID: ${id}`);
@@ -245,7 +243,7 @@ router.get('/api/inventory/raw-materials/:id',  async (req, res) => {
 });
 
 // 3. 更新原料信息
-router.put('/api/inventory/raw-materials/:id',  async (req, res) => {
+router.put('/inventory/raw-materials/:id',  async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`更新原料信息 - ID: ${id}`, req.body);
@@ -311,7 +309,7 @@ router.put('/api/inventory/raw-materials/:id',  async (req, res) => {
 });
 
 // 4. 删除原料
-router.delete('/api/inventory/raw-materials/:id',  async (req, res) => {
+router.delete('/inventory/raw-materials/:id',  async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`删除原料 - ID: ${id}`);
@@ -343,7 +341,7 @@ router.delete('/api/inventory/raw-materials/:id',  async (req, res) => {
 });
 
 // 5. 新增原料
-router.post('/api/inventory/raw-materials',  async (req, res) => {
+router.post('/inventory/raw-materials',  async (req, res) => {
   try {
     console.log('新增原料 - 参数:', req.body);
     

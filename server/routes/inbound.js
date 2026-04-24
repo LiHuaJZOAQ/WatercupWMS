@@ -5,14 +5,12 @@ const { createResponse, successResponse, errorResponse, formatDateTime, validate
 const moment = require('moment');
 const ExcelJS = require('exceljs');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 入库接口 - 完整版本
 // ====================================
 
 // 1. 获取筛选选项
-router.get('/api/inbound-orders/options',  async (req, res) => {
+router.get('/inbound-orders/options',  async (req, res) => {
   try {
     console.log('获取筛选选项 - 开始');
     
@@ -146,7 +144,7 @@ router.get('/api/inbound-orders/options',  async (req, res) => {
 });
 
 // 2. 获取入库单列表
-router.get('/api/inbound-orders',  async (req, res) => {
+router.get('/inbound-orders',  async (req, res) => {
   try {
     console.log('获取入库单列表 - 参数:', req.query);
     
@@ -334,7 +332,7 @@ router.get('/api/inbound-orders',  async (req, res) => {
 });
 
 // 3. 导出入库单
-router.get('/api/inbound-orders/export',  async (req, res) => {
+router.get('/inbound-orders/export',  async (req, res) => {
   try {
     console.log('导出入库单 - 开始');
     
@@ -495,7 +493,7 @@ router.get('/api/inbound-orders/export',  async (req, res) => {
 });
 
 // 4. 审核入库单
-router.put('/api/inbound-orders/audit',  async (req, res) => {
+router.put('/inbound-orders/audit',  async (req, res) => {
   try {
     console.log('审核入库单 - 参数:', req.body);
     
@@ -709,7 +707,7 @@ router.put('/api/inbound-orders/audit',  async (req, res) => {
 });
 
 // 5. 撤销入库单
-router.put('/api/inbound-orders/revoke',  async (req, res) => {
+router.put('/inbound-orders/revoke',  async (req, res) => {
   try {
     console.log('撤销入库单 - 参数:', req.body);
     
@@ -786,7 +784,7 @@ router.put('/api/inbound-orders/revoke',  async (req, res) => {
 });
 
 // 6. 获取打印数据
-router.get('/api/inbound-orders/:id/print',  async (req, res) => {
+router.get('/inbound-orders/:id/print',  async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`获取打印数据 - 入库单ID: ${id}`);
@@ -877,7 +875,7 @@ router.get('/api/inbound-orders/:id/print',  async (req, res) => {
 });
 
 // 7. 获取新建入库单选项
-router.get('/api/inbound-orders/create-options',  async (req, res) => {
+router.get('/inbound-orders/create-options',  async (req, res) => {
   try {
     console.log('获取新建入库单选项 - 开始');
 
@@ -969,7 +967,7 @@ router.get('/api/inbound-orders/create-options',  async (req, res) => {
 });
 
 // 8. 创建入库单
-router.post('/api/inbound-orders',  async (req, res) => {
+router.post('/inbound-orders',  async (req, res) => {
   try {
     console.log('创建入库单 - 参数:', req.body);
     
@@ -1112,7 +1110,7 @@ router.post('/api/inbound-orders',  async (req, res) => {
 });
 
 // 9. 获取入库单详情
-router.get('/api/inbound-orders/:id',  async (req, res) => {
+router.get('/inbound-orders/:id',  async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`获取入库单详情 - ID: ${id}`);
@@ -1200,7 +1198,7 @@ router.get('/api/inbound-orders/:id',  async (req, res) => {
 });
 
 // 10. 修改入库单
-router.put('/api/inbound-orders/:id',  async (req, res) => {
+router.put('/inbound-orders/:id',  async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`修改入库单 - ID: ${id}`, req.body);
@@ -1336,7 +1334,7 @@ router.put('/api/inbound-orders/:id',  async (req, res) => {
 });
 
 // 11. 删除入库单
-router.delete('/api/inbound-orders/:id',  async (req, res) => {
+router.delete('/inbound-orders/:id',  async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`删除入库单 - ID: ${id}`);

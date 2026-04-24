@@ -8,7 +8,7 @@ const { successResponse, errorResponse, executeQuery, executeTransaction } = req
 // ====================================
 
 // 1. 获取所有波次列表
-router.get('/api/waves', async (req, res) => {
+router.get('/waves', async (req, res) => {
   try {
     const { status, page = 1, pageSize = 10 } = req.query;
     let sql = `
@@ -48,7 +48,7 @@ router.get('/api/waves', async (req, res) => {
 });
 
 // 2. 智能推荐波次 (算法：将相同物料或相近库位的出库单合并)
-router.post('/api/waves/recommend', async (req, res) => {
+router.post('/waves/recommend', async (req, res) => {
   try {
     // 找出所有状态为'approved'且尚未加入波次的原出库单
     const pendingSql = `
@@ -107,7 +107,7 @@ router.post('/api/waves/recommend', async (req, res) => {
 });
 
 // 3. 生成新波次
-router.post('/api/waves', async (req, res) => {
+router.post('/waves', async (req, res) => {
   try {
     const { outboundIds, remark } = req.body;
     
@@ -161,7 +161,7 @@ router.post('/api/waves', async (req, res) => {
 });
 
 // 4. 获取波次拣货地图 (3D / 2D 路径所需数据)
-router.get('/api/waves/:id/pick-map', async (req, res) => {
+router.get('/waves/:id/pick-map', async (req, res) => {
   try {
     const waveId = req.params.id;
     
@@ -211,7 +211,7 @@ router.get('/api/waves/:id/pick-map', async (req, res) => {
 });
 
 // 5. 标记波次完成
-router.put('/api/waves/:id/complete', async (req, res) => {
+router.put('/waves/:id/complete', async (req, res) => {
   try {
     const waveId = req.params.id;
     const connection = await pool.getConnection();

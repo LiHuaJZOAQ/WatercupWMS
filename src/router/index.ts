@@ -131,5 +131,23 @@ const router = createRouter({
   ],
 })
 
+// 全局前置路由守卫：登录状态拦截
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token');
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const guestOnly = to.matched.some(record => record.meta.guestOnly);
+
+  if (requiresAuth && !token) {
+    // 需要登录但未登录，重定向到登录页
+    next('/login');
+  } else if (guestOnly && token) {
+    // 已登录状态不允许访问登录页，重定向到首页
+    next('/home/main');
+  } else {
+    // 其他情况正常放行
+    next();
+  }
+});
+
 export default router
 

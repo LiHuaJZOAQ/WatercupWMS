@@ -3,13 +3,11 @@ const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'watercup_wms_secret_key';
-
 // ====================================
 // 基础数据 - 成品档案管理接口
 // ====================================
 
-router.get('/api/finished-products', async (req, res) => {
+router.get('/finished-products', async (req, res) => {
   try {
     const { page = 1, pageSize = 10, keyword, category, status } = req.query;
     let whereConditions = [];
@@ -53,7 +51,7 @@ router.get('/api/finished-products', async (req, res) => {
   }
 });
 
-router.post('/api/finished-products', async (req, res) => {
+router.post('/finished-products', async (req, res) => {
   try {
     const { code, name, category, unit, specification, color, capacity, material, description, minStock = 0, maxStock = 0, status = 1 } = req.body;
     const validation = validateRequired({ code, name, unit }, ['code', 'name', 'unit']);
@@ -74,7 +72,7 @@ router.post('/api/finished-products', async (req, res) => {
   }
 });
 
-router.put('/api/finished-products/:id', async (req, res) => {
+router.put('/finished-products/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { code, name, category, unit, specification, color, capacity, material, description, minStock, maxStock, status } = req.body;
@@ -97,7 +95,7 @@ router.put('/api/finished-products/:id', async (req, res) => {
   }
 });
 
-router.delete('/api/finished-products/:id', async (req, res) => {
+router.delete('/finished-products/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const checkRel = await executeQuery('SELECT DetailID FROM FinishedProductInboundDetail WHERE FinishedProductID = ? LIMIT 1', [id]);
