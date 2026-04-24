@@ -109,6 +109,11 @@ const router = createRouter({
           path: '/mobile/scanner',
           name: 'MobileScanner',
           component: () => import('../views/home/components/MobileScanner.vue'),
+        },
+        {
+          path: '/outStorage/wavePicking',
+          name: 'WavePicking',
+          component: () => import('../views/home/components/OutStorage/WavePicking.vue'),
         }
       ],
     },

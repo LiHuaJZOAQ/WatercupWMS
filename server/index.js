@@ -32,6 +32,7 @@ app.use('/', require('./routes/outbound'));
 app.use('/', require('./routes/rawInventory'));
 app.use('/', require('./routes/locations'));
 app.use('/', require('./routes/stocktaking'));
+app.use('/', require('./routes/wave'));
 
 // 错误处理
 app.use(errorHandler);

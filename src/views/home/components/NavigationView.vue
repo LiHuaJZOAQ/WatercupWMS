@@ -44,6 +44,7 @@
         <el-menu-item index="出库管理/原料出库">原料出库</el-menu-item>
         <el-menu-item index="出库管理/产品出库">产品出库</el-menu-item>
         <el-menu-item index="出库管理/其他出库">其他出库</el-menu-item>
+        <el-menu-item index="出库管理/波次拣货">智能波次拣货 (推荐)</el-menu-item>
       </el-sub-menu>
       <el-sub-menu index="盘点管理">
         <template #title>
@@ -143,8 +144,12 @@ const handleMenuClick = (index: string) => {
     sendChangeView("InStorageFinishedProduct")
   } else if (index === '出库管理/原料出库') {
     sendChangeView('OutStorageRawMaterial')
+  } else if (index === '出库管理/成品出库') {
+    sendChangeView('OutStorageFinishedProduct')
   } else if (index === '出库管理/产品出库') {
     sendChangeView('OutStorageFinishedProduct')
+  } else if (index === '出库管理/波次拣货') {
+    sendChangeView('WavePicking')
   } else if (index === '盘点管理/原料盘点') {
     sendChangeView('CheckStorageRawMaterial')
   } else if (index === '盘点管理/产品盘点') {

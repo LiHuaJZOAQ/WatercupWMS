@@ -578,3 +578,39 @@ CREATE TABLE NumberSequence (
     INDEX IX_NumberSequence_Type (SequenceType) COMMENT '序列类型索引'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='单据编号生成表';
 
+
+-- ==========================================================
+-- 创新功能：波次管理 (Wave Picking) 附加表结构
+-- 包含：波次主表 (Wave) 和 波次明细表 (WaveDetail)
+-- ==========================================================
+
+-- 波次主表
+DROP TABLE IF EXISTS `Wave`;
+CREATE TABLE `Wave` (
+  `WaveID` int(11) NOT NULL AUTO_INCREMENT COMMENT '波次ID',
+  `WaveNo` varchar(50) NOT NULL COMMENT '波次编号 (例: WV202301010001)',
+  `Status` varchar(20) NOT NULL DEFAULT 'Pending' COMMENT '波次状态 (Pending:待拣货, Picking:拣货中, Completed:已完成, Cancelled:已取消)',
+  `CreatedBy` int(11) DEFAULT NULL COMMENT '创建人ID',
+  `CreatedTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `CompletedTime` datetime DEFAULT NULL COMMENT '完成时间',
+  `Remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (`WaveID`),
+  UNIQUE KEY `WaveNo_UNIQUE` (`WaveNo`),
+  KEY `fk_Wave_User1_idx` (`CreatedBy`),
+  CONSTRAINT `fk_Wave_User1` FOREIGN KEY (`CreatedBy`) REFERENCES `User` (`UserID`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='波次拣货主表';
+
+-- 波次明细表 (关联波次与出库单)
+DROP TABLE IF EXISTS `WaveDetail`;
+CREATE TABLE `WaveDetail` (
+  `WaveDetailID` int(11) NOT NULL AUTO_INCREMENT COMMENT '波次明细ID',
+  `WaveID` int(11) NOT NULL COMMENT '关联的波次ID',
+  `OutboundID` int(11) NOT NULL COMMENT '关联的原出库单ID (RawMaterialOutbound)',
+  `Status` varchar(20) NOT NULL DEFAULT 'Pending' COMMENT '该单拣货状态 (Pending, Picked)',
+  `PickedTime` datetime DEFAULT NULL COMMENT '拣货完成时间',
+  PRIMARY KEY (`WaveDetailID`),
+  KEY `fk_WaveDetail_Wave1_idx` (`WaveID`),
+  KEY `fk_WaveDetail_Outbound1_idx` (`OutboundID`),
+  CONSTRAINT `fk_WaveDetail_Wave1` FOREIGN KEY (`WaveID`) REFERENCES `Wave` (`WaveID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_WaveDetail_Outbound1` FOREIGN KEY (`OutboundID`) REFERENCES `RawMaterialOutbound` (`OutboundID`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='波次明细表(关联出库单)';

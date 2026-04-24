@@ -435,3 +435,13 @@ FROM Warehouse w
 JOIN Location l ON w.WarehouseID = l.WarehouseID
 GROUP BY w.WarehouseID, w.WarehouseName, l.LocationType
 ORDER BY w.WarehouseID, l.LocationType;
+-- ==========================================================
+-- 创新功能：波次管理 (Wave Picking) 测试数据
+-- ==========================================================
+INSERT INTO `Wave` (`WaveID`, `WaveNo`, `Status`, `CreatedBy`, `CreatedTime`, `Remark`) VALUES
+(1, 'WV202310250001', 'Pending', 1, '2023-10-25 10:00:00', '上午紧急合并波次'),
+(2, 'WV202310250002', 'Completed', 2, '2023-10-25 14:00:00', '下午常规波次');
+
+INSERT INTO `WaveDetail` (`WaveID`, `OutboundID`, `Status`, `PickedTime`) VALUES
+(1, 1, 'Pending', NULL),
+(2, 2, 'Picked', '2023-10-25 15:30:00');
