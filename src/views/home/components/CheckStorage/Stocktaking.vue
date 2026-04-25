@@ -98,8 +98,8 @@
 
         <h4 style="margin-top: 20px;">盘点明细</h4>
         <el-table :data="detailsData.details" border stripe style="width: 100%; margin-top: 10px;">
-          <el-table-column prop="itemName" label="原料名称" />
-          <el-table-column prop="itemCode" label="原料编号" />
+          <el-table-column prop="itemName" label="商品名称" />
+          <el-table-column prop="itemCode" label="商品编号" />
           <el-table-column prop="locationCode" label="库位" />
           <el-table-column prop="systemQuantity" label="系统库存" align="right" />
           <el-table-column prop="actualQuantity" label="实际库存" align="right" />
@@ -187,7 +187,7 @@ const fetchData = async () => {
     const params = {
       page: currentPage.value,
       pageSize: pageSize.value,
-      itemType: 'RawMaterial', // 仅查询包含原料盘点的记录
+      itemType: 'RawMaterial', // 仅查询包含盘点作业的记录
       ...filter
     };
     const res = await api.getStocktakings(params);
@@ -217,7 +217,7 @@ const handleCurrentChange = (val) => {
 };
 
 const handleCreate = () => {
-  ElMessage.warning('新建原料盘点功能暂未实现');
+  ElMessage.warning('新建盘点作业功能暂未实现');
 };
 
 const handleDetails = async (row) => {

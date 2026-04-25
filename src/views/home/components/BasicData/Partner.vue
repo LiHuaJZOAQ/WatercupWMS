@@ -1,5 +1,5 @@
 <template>
-  <div class="supplier-container">
+  <div class="partner-container">
     <div class="filter-card">
       <el-form :inline="true" :model="filter" class="filter-form">
         <el-form-item label="关键字">
@@ -20,14 +20,14 @@
 
     <div class="action-card">
       <el-button type="success" @click="handleAdd">
-        <i class="el-icon-plus"></i> 新增供应商
+        <i class="el-icon-plus"></i> 新增往来单位
       </el-button>
     </div>
 
     <div class="data-container">
       <el-table :data="tableData" border stripe v-loading="loading">
-        <el-table-column prop="code" label="供应商编码" width="150" />
-        <el-table-column prop="name" label="供应商名称" min-width="200" />
+        <el-table-column prop="code" label="往来单位编码" width="150" />
+        <el-table-column prop="name" label="往来单位名称" min-width="200" />
         <el-table-column prop="contactPerson" label="联系人" width="120" />
         <el-table-column prop="contactPhone" label="联系电话" width="150" />
         <el-table-column prop="email" label="邮箱" width="180" />
@@ -110,7 +110,7 @@ const pageSize = ref(10);
 const total = ref(0);
 
 const dialogVisible = ref(false);
-const dialogTitle = ref('新增供应商');
+const dialogTitle = ref('新增往来单位');
 const formRef = ref(null);
 const formData = reactive({
   id: null,
@@ -124,8 +124,8 @@ const formData = reactive({
 });
 
 const rules = {
-  code: [{ required: true, message: '请输入供应商编码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入供应商名称', trigger: 'blur' }]
+  code: [{ required: true, message: '请输入往来单位编码', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入往来单位名称', trigger: 'blur' }]
 };
 
 const fetchData = async () => {
@@ -136,7 +136,7 @@ const fetchData = async () => {
       pageSize: pageSize.value,
       ...filter
     };
-    const res = await api.getSuppliers(params);
+    const res = await api.getPartners(params);
     tableData.value = res.data?.items || [];
     total.value = res.data?.total || 0;
   } catch (error) {
@@ -153,7 +153,7 @@ const resetFilter = () => {
 };
 
 const handleAdd = () => {
-  dialogTitle.value = '新增供应商';
+  dialogTitle.value = '新增往来单位';
   Object.keys(formData).forEach(k => formData[k] = '');
   formData.id = null;
   formData.status = 1;
@@ -161,7 +161,7 @@ const handleAdd = () => {
 };
 
 const handleEdit = (row) => {
-  dialogTitle.value = '编辑供应商';
+  dialogTitle.value = '编辑往来单位';
   Object.keys(formData).forEach(k => formData[k] = row[k]);
   formData.id = row.id;
   dialogVisible.value = true;
@@ -173,10 +173,10 @@ const handleSubmit = async () => {
     if (valid) {
       try {
         if (formData.id) {
-          await api.updateSupplier(formData.id, formData);
+          await api.updatePartner(formData.id, formData);
           ElMessage.success('更新成功');
         } else {
-          await api.createSupplier(formData);
+          await api.createPartner(formData);
           ElMessage.success('创建成功');
         }
         dialogVisible.value = false;
@@ -190,8 +190,8 @@ const handleSubmit = async () => {
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确定要删除该供应商吗？', '提示', { type: 'warning' });
-    await api.deleteSupplier(row.id);
+    await ElMessageBox.confirm('确定要删除该往来单位吗？', '提示', { type: 'warning' });
+    await api.deletePartner(row.id);
     ElMessage.success('删除成功');
     fetchData();
   } catch (error) {
@@ -207,7 +207,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.supplier-container {
+.partner-container {
   padding: 16px;
   background: #f0f2f5;
   min-height: 100vh;

@@ -1,5 +1,5 @@
 <template>
-  <div class="product-container">
+  <div class="item-container">
     <div class="filter-card">
       <el-form :inline="true" :model="filter" class="filter-form">
         <el-form-item label="关键字">
@@ -20,18 +20,21 @@
 
     <div class="action-card">
       <el-button type="success" @click="handleAdd">
-        <i class="el-icon-plus"></i> 新增成品
+        <i class="el-icon-plus"></i> 新增商品
       </el-button>
     </div>
 
     <div class="data-container">
       <el-table :data="tableData" border stripe v-loading="loading">
-        <el-table-column prop="code" label="成品编码" width="150" />
-        <el-table-column prop="name" label="成品名称" min-width="180" />
+        <el-table-column prop="code" label="商品编码" width="150" />
+        <el-table-column prop="name" label="商品名称" min-width="180" />
         <el-table-column prop="category" label="分类" width="120" />
         <el-table-column prop="specification" label="规格" width="150" />
-        <el-table-column prop="color" label="颜色" width="100" />
-        <el-table-column prop="capacity" label="容量" width="100" />
+        <el-table-column prop="attributes" label="扩展属性(Attributes)" min-width="180">
+          <template #default="{ row }">
+            {{ formatAttributes(row.attributes) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="unit" label="单位" width="80" />
         <el-table-column prop="minStock" label="安全库存(下限)" width="120" align="right" />
         <el-table-column prop="maxStock" label="安全库存(上限)" width="120" align="right" />
@@ -93,18 +96,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="颜色">
-              <el-input v-model="formData.color" placeholder="请输入颜色" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="容量">
-              <el-input v-model="formData.capacity" placeholder="例如: 500ml" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="材质">
-              <el-input v-model="formData.material" placeholder="请输入材质" />
+            <el-form-item label="扩展属性(JSON)" prop="attributes">
+              <el-input v-model="formData.attributes" type="textarea" placeholder='例如: {"color": "Red", "size": "XL"}' />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -154,7 +147,7 @@ const pageSize = ref(10);
 const total = ref(0);
 
 const dialogVisible = ref(false);
-const dialogTitle = ref('新增成品');
+const dialogTitle = ref('新增商品');
 const formRef = ref(null);
 const formData = reactive({
   id: null,
@@ -163,18 +156,32 @@ const formData = reactive({
   category: '',
   unit: '',
   specification: '',
-  color: '',
-  capacity: '',
-  material: '',
+  attributes: '{}', // Stringified JSON or object depending on input
   description: '',
   minStock: 0,
   maxStock: 0,
   status: 1
 });
 
+const formatAttributes = (attr) => {
+  if (!attr) return '-';
+  if (typeof attr === 'string') {
+    try {
+      const obj = JSON.parse(attr);
+      return Object.entries(obj).map(([k, v]) => `${k}:${v}`).join(', ');
+    } catch(e) {
+      return attr;
+    }
+  }
+  if (typeof attr === 'object') {
+    return Object.entries(attr).map(([k, v]) => `${k}:${v}`).join(', ');
+  }
+  return attr;
+};
+
 const rules = {
-  code: [{ required: true, message: '请输入成品编码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入成品名称', trigger: 'blur' }],
+  code: [{ required: true, message: '请输入商品编码', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
   unit: [{ required: true, message: '请输入单位', trigger: 'blur' }]
 };
 
@@ -186,7 +193,7 @@ const fetchData = async () => {
       pageSize: pageSize.value,
       ...filter
     };
-    const res = await api.getFinishedProducts(params);
+    const res = await api.getItems(params);
     tableData.value = res.data?.items || [];
     total.value = res.data?.total || 0;
   } catch (error) {
@@ -203,7 +210,7 @@ const resetFilter = () => {
 };
 
 const handleAdd = () => {
-  dialogTitle.value = '新增成品';
+  dialogTitle.value = '新增商品';
   Object.keys(formData).forEach(k => formData[k] = (k === 'minStock' || k === 'maxStock') ? 0 : '');
   formData.id = null;
   formData.status = 1;
@@ -211,7 +218,7 @@ const handleAdd = () => {
 };
 
 const handleEdit = (row) => {
-  dialogTitle.value = '编辑成品';
+  dialogTitle.value = '编辑商品';
   Object.keys(formData).forEach(k => formData[k] = row[k]);
   formData.id = row.id;
   formData.minStock = Number(formData.minStock) || 0;
@@ -225,10 +232,10 @@ const handleSubmit = async () => {
     if (valid) {
       try {
         if (formData.id) {
-          await api.updateFinishedProduct(formData.id, formData);
+          await api.updateItem(formData.id, formData);
           ElMessage.success('更新成功');
         } else {
-          await api.createFinishedProduct(formData);
+          await api.createItem(formData);
           ElMessage.success('创建成功');
         }
         dialogVisible.value = false;
@@ -242,8 +249,8 @@ const handleSubmit = async () => {
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确定要删除该成品档案吗？', '提示', { type: 'warning' });
-    await api.deleteFinishedProduct(row.id);
+    await ElMessageBox.confirm('确定要删除该商品档案吗？', '提示', { type: 'warning' });
+    await api.deleteItem(row.id);
     ElMessage.success('删除成功');
     fetchData();
   } catch (error) {
@@ -259,7 +266,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.product-container {
+.item-container {
   padding: 16px;
   background: #f0f2f5;
   min-height: 100vh;

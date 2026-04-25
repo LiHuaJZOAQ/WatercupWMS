@@ -1,7 +1,7 @@
 <template>
   <div class="mobile-scanner-container">
     <div class="scanner-header">
-      <h2><el-icon><Scan /></el-icon> 移动扫码工作台 (PDA)</h2>
+      <h2><el-icon><Aim /></el-icon> 移动扫码工作台 (PDA)</h2>
       <el-tag type="success" effect="dark">连接正常</el-tag>
     </div>
 
@@ -52,7 +52,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Scan, Camera, Crop } from '@element-plus/icons-vue';
+import { Aim, Camera, Crop } from '@element-plus/icons-vue';
 import moment from 'moment';
 
 const scanInput = ref(null);

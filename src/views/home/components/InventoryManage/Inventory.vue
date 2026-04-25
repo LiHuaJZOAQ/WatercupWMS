@@ -4,8 +4,8 @@
         <div class="filter-card">
             <div class="filter-row">
                 <div class="filter-col">
-                    <label>原料名称/编码</label>
-                    <el-input v-model="searchQuery" placeholder="请输入原料名称或编码" clearable @clear="clearSearch" />
+                    <label>商品名称/编码</label>
+                    <el-input v-model="searchQuery" placeholder="请输入商品名称或编码" clearable @clear="clearSearch" />
                 </div>
                 <div class="filter-col">
                     <label>分类</label>
@@ -32,7 +32,7 @@
         <div class="action-bar">
             <el-button class="action-btn" type="primary" @click="handleAdd">
                 <i class="el-icon-plus"></i>
-                新增原料
+                新增商品
             </el-button>
             <el-button class="action-btn" @click="exportData">
                 <i class="el-icon-download"></i>
@@ -55,13 +55,13 @@
                     
                     <el-table-column type="selection" width="50" align="center" />
                     
-                    <el-table-column prop="code" label="原料编码" width="120" show-overflow-tooltip>
+                    <el-table-column prop="code" label="商品编码" width="120" show-overflow-tooltip>
                         <template #default="{ row }">
                             {{ row.code || '-' }}
                         </template>
                     </el-table-column>
                     
-                    <el-table-column prop="name" label="原料名称" width="150" show-overflow-tooltip>
+                    <el-table-column prop="name" label="商品名称" width="150" show-overflow-tooltip>
                         <template #default="{ row }">
                             {{ row.name || '-' }}
                         </template>
@@ -152,12 +152,12 @@
             <el-form :model="currentMaterial" label-width="120px" :rules="formRules" ref="materialForm">
                 <el-row :gutter="20">
                     <el-col :span="12">
-                        <el-form-item label="原料编码" prop="code">
+                        <el-form-item label="商品编码" prop="code">
                             <el-input v-model="currentMaterial.code" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="原料名称" prop="name">
+                        <el-form-item label="商品名称" prop="name">
                             <el-input v-model="currentMaterial.name" />
                         </el-form-item>
                     </el-col>
@@ -209,7 +209,7 @@
         </el-dialog>
 
         <!-- 详情对话框 -->
-        <el-dialog v-model="detailDialogVisible" title="原料详情" width="800px">
+        <el-dialog v-model="detailDialogVisible" title="商品详情" width="800px">
             <div v-if="materialDetail" class="detail-container">
                 <!-- 基本信息 -->
                 <div class="detail-section">
@@ -217,13 +217,13 @@
                     <el-row :gutter="20" class="detail-row">
                         <el-col :span="8">
                             <div class="detail-item">
-                                <span class="label">原料编码：</span>
+                                <span class="label">商品编码：</span>
                                 <span class="value">{{ materialDetail.data.code }}</span>
                             </div>
                         </el-col>
                         <el-col :span="8">
                             <div class="detail-item">
-                                <span class="label">原料名称：</span>
+                                <span class="label">商品名称：</span>
                                 <span class="value">{{ materialDetail.data.name }}</span>
                             </div>
                         </el-col>
@@ -392,15 +392,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
-    getRawMaterialInventoryList,
-    getRawMaterialInventoryDetail,
-    addRawMaterial,
-    updateRawMaterial,
-    deleteRawMaterial
-} from '@/api/inventory'
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import api from '@/api'
 
 // 响应式数据
 const materials = ref([])
@@ -431,9 +425,9 @@ const selectedMaterials = ref([])
 
 // 分类选项
 const categories = [
-    { value: '塑料原料', label: '塑料原料' },
-    { value: '金属原料', label: '金属原料' },
-    { value: '玻璃原料', label: '玻璃原料' },
+    { value: '塑料商品', label: '塑料商品' },
+    { value: '金属商品', label: '金属商品' },
+    { value: '玻璃商品', label: '玻璃商品' },
     { value: '密封配件', label: '密封配件' },
     { value: '配件', label: '配件' },
     { value: '包装材料', label: '包装材料' }
@@ -449,12 +443,12 @@ const statusOptions = [
 // 表单验证规则
 const formRules = {
     code: [
-        { required: true, message: '请输入原料编码', trigger: 'blur' },
-        { pattern: /^[A-Z0-9]{3,20}$/, message: '原料编码格式不正确', trigger: 'blur' }
+        { required: true, message: '请输入商品编码', trigger: 'blur' },
+        { pattern: /^[A-Z0-9]{3,20}$/, message: '商品编码格式不正确', trigger: 'blur' }
     ],
     name: [
-        { required: true, message: '请输入原料名称', trigger: 'blur' },
-        { min: 2, max: 100, message: '原料名称长度在2到100个字符', trigger: 'blur' }
+        { required: true, message: '请输入商品名称', trigger: 'blur' },
+        { min: 2, max: 100, message: '商品名称长度在2到100个字符', trigger: 'blur' }
     ],
     category: [{ required: true, message: '请选择分类', trigger: 'change' }],
     unit: [
@@ -489,35 +483,21 @@ onMounted(() => {
 
 // 方法
 const fetchMaterials = async () => {
+    loading.value = true
     try {
-        loading.value = true
-        
-        const params = {
+        const response = await api.getInventory({
             page: currentPage.value,
             pageSize: pageSize.value,
-            materialName: searchQuery.value || undefined,
+            keyword: searchQuery.value || undefined,
             category: categoryFilter.value || undefined,
             status: statusFilter.value !== '' ? statusFilter.value : undefined
-        }
-
-        console.log('请求参数:', params)
-        const response = await getRawMaterialInventoryList(params)
-        console.log('API响应:', response)
+        })
         
-        if (response && response.data) {
-            materials.value = response.data.list || response.data.items || response.data || []
-            totalItems.value = response.data.total || response.data.count || materials.value.length || 0
-            
-            console.log('材料数据:', materials.value)
-            console.log('总数:', totalItems.value)
-        } else {
-            materials.value = []
-            totalItems.value = 0
-            console.warn('API响应格式异常:', response)
-        }
+        materials.value = response.data?.items || response.data?.list || response.data || []
+        totalItems.value = response.data?.total || response.data?.count || materials.value.length || 0
     } catch (error) {
-        console.error('获取原料库存列表失败:', error)
-        ElMessage.error(error.response?.data?.message || error.message || '获取原料库存列表失败')
+        console.error('获取商品库存列表失败:', error)
+        ElMessage.error('获取商品库存列表失败')
         materials.value = []
         totalItems.value = 0
     } finally {
@@ -595,11 +575,11 @@ const getStockStatusText = (material) => {
 }
 
 const handleAdd = () => {
-    dialogTitle.value = '新增原料'
+    dialogTitle.value = '新增商品'
     currentMaterial.value = {
-        MaterialID: null,
-        MaterialCode: '',
-        MaterialName: '',
+        ItemID: null,
+        ItemCode: '',
+        ItemName: '',
         Category: '',
         Specification: '',
         Unit: '',
@@ -616,9 +596,9 @@ const handleDetails = async (row) => {
         loading.value = true
         console.log('获取详情:', row)
         
-        const materialId = row.MaterialID || row.id
+        const materialId = row.ItemID || row.id
         if (!materialId) {
-            ElMessage.error('无法获取原料ID')
+            ElMessage.error('无法获取商品ID')
             return
         }
         
@@ -629,30 +609,30 @@ const handleDetails = async (row) => {
             materialDetail.value = response.data
             detailDialogVisible.value = true
         } else {
-            ElMessage.error('获取原料详情失败')
+            ElMessage.error('获取商品详情失败')
         }
     } catch (error) {
-        console.error('获取原料详情失败:', error)
-        ElMessage.error(error.response?.data?.message || error.message || '获取原料详情失败')
+        console.error('获取商品详情失败:', error)
+        ElMessage.error(error.response?.data?.message || error.message || '获取商品详情失败')
     } finally {
         loading.value = false
     }
 }
 
 // const editMaterial = (row) => {
-//     dialogTitle.value = '编辑原料'
+//     dialogTitle.value = '编辑商品'
 //     currentMaterial.value = { ...row }
 //     detailDialogVisible.value = false
 //     dialogVisible.value = true
 // }
 const editMaterial = (row) => {
-    dialogTitle.value = '编辑原料'
+    dialogTitle.value = '编辑商品'
     
     // 适配不同的数据结构
     currentMaterial.value = {
-        id: row.MaterialID || row.id,
-        code: row.MaterialCode || row.code || '',
-        name: row.MaterialName || row.name || '',
+        id: row.ItemID || row.id,
+        code: row.ItemCode || row.code || '',
+        name: row.ItemName || row.name || '',
         category: row.Category || row.category || '',
         specification: row.Specification || row.specification || '',
         unit: row.Unit || row.unit || '',
@@ -666,11 +646,11 @@ const editMaterial = (row) => {
 }
 
 // const deleteMaterial = (row) => {
-//     const materialId = row.MaterialID || row.id
-//     const materialName = row.MaterialName || row.name || '该原料'
+//     const materialId = row.ItemID || row.id
+//     const materialName = row.ItemName || row.name || '该商品'
     
 //     ElMessageBox.confirm(
-//         `确认删除原料"${materialName}"吗？删除后不可恢复！`, 
+//         `确认删除商品"${materialName}"吗？删除后不可恢复！`, 
 //         '删除确认', 
 //         {
 //             confirmButtonText: '确定删除',
@@ -685,8 +665,8 @@ const editMaterial = (row) => {
 //             ElMessage.success('删除成功')
 //             fetchMaterials()
 //         } catch (error) {
-//             console.error('删除原料失败:', error)
-//             ElMessage.error(error.response?.data?.message || error.message || '删除原料失败')
+//             console.error('删除商品失败:', error)
+//             ElMessage.error(error.response?.data?.message || error.message || '删除商品失败')
 //         } finally {
 //             loading.value = false
 //         }
@@ -695,11 +675,11 @@ const editMaterial = (row) => {
 //     })
 // }
 const deleteMaterial = async (row) => {
-    const materialId = row.MaterialID || row.id
-    const materialName = row.MaterialName || row.name || '该原料'
+    const materialId = row.ItemID || row.id
+    const materialName = row.ItemName || row.name || '该商品'
     
     // 使用浏览器原生确认框
-    const confirmed = confirm(`确认删除原料"${materialName}"吗？删除后不可恢复！`)
+    const confirmed = confirm(`确认删除商品"${materialName}"吗？删除后不可恢复！`)
     
     if (confirmed) {
         try {
@@ -708,8 +688,8 @@ const deleteMaterial = async (row) => {
             ElMessage.success('删除成功')
             fetchMaterials()
         } catch (error) {
-            console.error('删除原料失败:', error)
-            ElMessage.error(error.response?.data?.message || error.message || '删除原料失败')
+            console.error('删除商品失败:', error)
+            ElMessage.error(error.response?.data?.message || error.message || '删除商品失败')
         } finally {
             loading.value = false
         }
@@ -724,11 +704,11 @@ const submitForm = async () => {
     // 验证表单
     try {
         if (!currentMaterial.value.code) {
-            ElMessage.error('请输入原料编码')
+            ElMessage.error('请输入商品编码')
             return
         }
         if (!currentMaterial.value.name) {
-            ElMessage.error('请输入原料名称')
+            ElMessage.error('请输入商品名称')
             return
         }
         if (!currentMaterial.value.category) {

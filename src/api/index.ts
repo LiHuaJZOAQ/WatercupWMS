@@ -71,62 +71,20 @@ const api={
     deleteOutboundOrder: (id: number | string) => {
         return axios.delete(`/outbound-orders/${id}`);
     },
-    // 获取供应商列表
-    getSuppliers: (params: any) => {
-        return axios.get("/suppliers", { params });
-    },
-    // 创建供应商
-    createSupplier: (data: any) => {
-        return axios.post("/suppliers", data);
-    },
-    // 更新供应商
-    updateSupplier: (id: number | string, data: any) => {
-        return axios.put(`/suppliers/${id}`, data);
-    },
-    // 删除供应商
-    deleteSupplier: (id: number | string) => {
-        return axios.delete(`/suppliers/${id}`);
-    },
+    // 往来单位 (Partner)
+    getPartners: (params: any) => axios.get("/partners", { params }),
+    createPartner: (data: any) => axios.post("/partners", data),
+    updatePartner: (id: number | string, data: any) => axios.put(`/partners/${id}`, data),
+    deletePartner: (id: number | string) => axios.delete(`/partners/${id}`),
 
-    // 客户管理
-    getCustomers: (params: any) => axios.get("/customers", { params }),
-    createCustomer: (data: any) => axios.post("/customers", data),
-    updateCustomer: (id: number | string, data: any) => axios.put(`/customers/${id}`, data),
-    deleteCustomer: (id: number | string) => axios.delete(`/customers/${id}`),
+    // 商品档案 (Item/SKU)
+    getItems: (params: any) => axios.get("/items", { params }),
+    createItem: (data: any) => axios.post("/items", data),
+    updateItem: (id: number | string, data: any) => axios.put(`/items/${id}`, data),
+    deleteItem: (id: number | string) => axios.delete(`/items/${id}`),
 
-    // 部门管理
-    getDepartments: (params: any) => axios.get("/departments", { params }),
-    createDepartment: (data: any) => axios.post("/departments", data),
-    updateDepartment: (id: number | string, data: any) => axios.put(`/departments/${id}`, data),
-    deleteDepartment: (id: number | string) => axios.delete(`/departments/${id}`),
-
-    // 加工厂管理
-    getFactories: (params: any) => axios.get("/factories", { params }),
-    createFactory: (data: any) => axios.post("/factories", data),
-    updateFactory: (id: number | string, data: any) => axios.put(`/factories/${id}`, data),
-    deleteFactory: (id: number | string) => axios.delete(`/factories/${id}`),
-
-    // 成品档案管理
-    getFinishedProducts: (params: any) => axios.get("/finished-products", { params }),
-    createFinishedProduct: (data: any) => axios.post("/finished-products", data),
-    updateFinishedProduct: (id: number | string, data: any) => axios.put(`/finished-products/${id}`, data),
-    deleteFinishedProduct: (id: number | string) => axios.delete(`/finished-products/${id}`),
-
-    // 成品入库管理
-    getFinishedInboundOptions: () => axios.get("/finished-inbounds/options"),
-    getFinishedInbounds: (params: any) => axios.get("/finished-inbounds", { params }),
-    getFinishedInboundDetail: (id: number | string) => axios.get(`/finished-inbounds/${id}`),
-    auditFinishedInbound: (id: number | string, data: any) => axios.put(`/finished-inbounds/${id}/audit`, data),
-    revokeFinishedInbound: (id: number | string) => axios.put(`/finished-inbounds/${id}/revoke`),
-    deleteFinishedInbound: (id: number | string) => axios.delete(`/finished-inbounds/${id}`),
-
-    // 成品出库管理
-    getFinishedOutboundOptions: () => axios.get("/finished-outbounds/options"),
-    getFinishedOutbounds: (params: any) => axios.get("/finished-outbounds", { params }),
-    getFinishedOutboundDetail: (id: number | string) => axios.get(`/finished-outbounds/${id}`),
-    auditFinishedOutbound: (id: number | string, data: any) => axios.put(`/finished-outbounds/${id}/audit`, data),
-    revokeFinishedOutbound: (id: number | string) => axios.put(`/finished-outbounds/${id}/revoke`),
-    deleteFinishedOutbound: (id: number | string) => axios.delete(`/finished-outbounds/${id}`),
+    // 全局库存查询
+    getInventory: (params: any) => axios.get("/inventory", { params }),
 
     // 盘点管理
     getStocktakings: (params: any) => axios.get("/stocktaking", { params }),

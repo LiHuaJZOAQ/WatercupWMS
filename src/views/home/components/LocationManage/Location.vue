@@ -135,7 +135,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="materialInfo" label="存储原料" width="200">
+          <el-table-column prop="materialInfo" label="存储通用" width="200">
             <template #default="{ row }">
               <div v-if="row.materialInfo && row.materialInfo.length > 0">
                 <div 
@@ -154,7 +154,7 @@
                   size="small"
                   @click="showMoreMaterials(row)"
                 >
-                  +{{ row.materialInfo.length - 2 }}种原料
+                  +{{ row.materialInfo.length - 2 }}种通用
                 </el-link>
               </div>
               <span v-else class="empty-location">空库位</span>
@@ -350,8 +350,8 @@
         <el-divider content-position="left">库存明细</el-divider>
         
         <el-table :data="locationDetail.data.inventoryDetails" border stripe>
-          <el-table-column prop="materialCode" label="原料编码" width="120" />
-          <el-table-column prop="materialName" label="原料名称" width="150" />
+          <el-table-column prop="materialCode" label="通用编码" width="120" />
+          <el-table-column prop="materialName" label="通用名称" width="150" />
           <el-table-column prop="specification" label="规格" show-overflow-tooltip />
           <el-table-column prop="batchNumber" label="批次号" width="120" />
           <el-table-column label="库存数量" width="120" align="right">
@@ -364,15 +364,15 @@
       </div>
     </el-dialog>
 
-    <!-- 原料详情弹窗 -->
+    <!-- 通用详情弹窗 -->
     <el-dialog
       v-model="materialDialogVisible"
-      title="库位存储原料详情"
+      title="库位存储通用详情"
       width="600px"
     >
       <el-table :data="selectedLocationMaterials" border>
-        <el-table-column prop="materialName" label="原料名称" />
-        <el-table-column prop="materialCode" label="原料编码" />
+        <el-table-column prop="materialName" label="通用名称" />
+        <el-table-column prop="materialCode" label="通用编码" />
         <el-table-column label="数量">
           <template #default="{ row }">
             {{ row.quantity }}{{ row.unit }}

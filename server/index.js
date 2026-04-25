@@ -21,19 +21,14 @@ app.use("/api", authenticateToken);
 
 // 注册业务路由，统一挂载在 /api 下
 app.use('/api', require('./routes/users'));
-app.use('/api', require('./routes/suppliers'));
-app.use('/api', require('./routes/customers'));
-app.use('/api', require('./routes/departments'));
-app.use('/api', require('./routes/factories'));
-app.use('/api', require('./routes/finishedProducts'));
+app.use('/api', require('./routes/partners'));
+app.use('/api', require('./routes/items'));
+app.use('/api', require('./routes/inboundOrders'));
+app.use('/api', require('./routes/outboundOrders'));
+app.use('/api', require('./routes/inventory'));
 app.use('/api', require('./routes/userManage'));
 app.use('/api', require('./routes/roles'));
 app.use('/api', require('./routes/operationLogs'));
-app.use('/api', require('./routes/inbound'));
-app.use('/api', require('./routes/finishedInbounds'));
-app.use('/api', require('./routes/finishedOutbounds'));
-app.use('/api', require('./routes/outbound'));
-app.use('/api', require('./routes/rawInventory'));
 app.use('/api', require('./routes/locations'));
 app.use('/api', require('./routes/stocktaking'));
 app.use('/api', require('./routes/wave'));

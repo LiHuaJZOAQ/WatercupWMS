@@ -37,7 +37,7 @@
           </el-select>
         </div>
         <div class="filter-col">
-          <label>原料名称：</label>
+          <label>商品名称：</label>
           <el-select v-model="filter.materialName" placeholder="请选择">
             <el-option 
               v-for="item in options.materialNames"
@@ -50,7 +50,7 @@
       </div>
       <div class="filter-row">
         <div class="filter-col">
-          <label>原料编号：</label>
+          <label>商品编号：</label>
           <el-select v-model="filter.materialNo" placeholder="请选择">
             <el-option 
               v-for="item in options.materialNos"
@@ -107,7 +107,7 @@
           </el-select>
         </div>
         <div class="filter-col">
-          <label>供应商：</label>
+          <label>往来单位：</label>
           <el-select v-model="filter.supplier" placeholder="请选择">
             <el-option 
               v-for="item in options.suppliers"
@@ -199,7 +199,7 @@
         />
         <el-table-column
           prop="supplierName"
-          label="供应商名称"
+          label="往来单位名称"
           min-width="150"
         />
         <el-table-column
@@ -346,7 +346,7 @@
             <strong>入库单号：</strong>{{ detailsData.warehouseReceiptNo }}
           </el-col>
           <el-col :span="8">
-            <strong>供应商：</strong>{{ detailsData.supplierName }}
+            <strong>往来单位：</strong>{{ detailsData.supplierName }}
           </el-col>
           <el-col :span="8">
             <strong>生产商：</strong>{{ detailsData.manufacturerName }}
@@ -371,10 +371,10 @@
             </el-tag>
           </el-col>
           <el-col :span="8">
-            <strong>原料名称：</strong>{{ detailsData.materialName }}
+            <strong>商品名称：</strong>{{ detailsData.materialName }}
           </el-col>
           <el-col :span="8">
-            <strong>原料编号：</strong>{{ detailsData.materialNo }}
+            <strong>商品编号：</strong>{{ detailsData.materialNo }}
           </el-col>
         </el-row>
         <!-- 可以根据需要扩展更多信息 -->
@@ -675,20 +675,20 @@ const handlePrint = async (row) => {
             </style>
           </head>
           <body>
-            <h2>原料入库单</h2>
+            <h2>入库单单</h2>
             <div class="header-info">
               <span><strong>单号：</strong>${res.data.warehouseReceiptNo || ''}</span>
               <span><strong>入库日期：</strong>${res.data.warehouseDate || ''}</span>
             </div>
             <div class="header-info">
-              <span><strong>供应商：</strong>${res.data.supplierName || ''}</span>
+              <span><strong>往来单位：</strong>${res.data.supplierName || ''}</span>
               <span><strong>生产商：</strong>${res.data.manufacturerName || ''}</span>
             </div>
             <table>
               <thead>
                 <tr>
-                  <th>原料名称</th>
-                  <th>原料编号</th>
+                  <th>商品名称</th>
+                  <th>商品编号</th>
                   <th>实收数量</th>
                   <th>实收毛重</th>
                   <th>实收净重</th>

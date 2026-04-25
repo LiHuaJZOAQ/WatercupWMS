@@ -61,7 +61,7 @@
             {{ getTypeText(row.type) }}
           </template>
         </el-table-column>
-        <el-table-column prop="departmentName" label="领用部门" min-width="120" />
+        <el-table-column prop="departmentName" label="往来单位" min-width="120" />
         <el-table-column prop="warehouseName" label="仓库" min-width="120" />
         <el-table-column prop="totalQuantity" label="总数量" width="120" align="right" />
         <el-table-column prop="totalAmount" label="总金额" width="120" align="right" />
@@ -124,7 +124,7 @@
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="出库类型">{{ getTypeText(detailsData.type) }}</el-descriptions-item>
-          <el-descriptions-item label="领用部门">{{ detailsData.departmentName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="往来单位">{{ detailsData.departmentName || '-' }}</el-descriptions-item>
           <el-descriptions-item label="仓库">{{ detailsData.warehouseName || '-' }}</el-descriptions-item>
           <el-descriptions-item label="操作人">{{ detailsData.operatorName || '-' }}</el-descriptions-item>
           <el-descriptions-item label="出库时间">{{ detailsData.outboundDate }}</el-descriptions-item>
@@ -134,8 +134,8 @@
 
         <h4 style="margin-top: 20px;">出库明细</h4>
         <el-table :data="detailsData.details" border stripe style="width: 100%; margin-top: 10px;">
-          <el-table-column prop="materialName" label="原料名称" />
-          <el-table-column prop="materialCode" label="原料编号" />
+          <el-table-column prop="materialName" label="商品名称" />
+          <el-table-column prop="materialCode" label="商品编号" />
           <el-table-column prop="specification" label="规格" />
           <el-table-column prop="quantity" label="出库数量" align="right" />
           <el-table-column prop="unit" label="单位" width="80" />

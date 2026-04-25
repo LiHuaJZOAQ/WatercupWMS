@@ -53,10 +53,10 @@ router.post('/waves/recommend', async (req, res) => {
     // 找出所有状态为'approved'且尚未加入波次的原出库单
     const pendingSql = `
       SELECT o.OutboundID, o.OutboundNo, o.CreatedTime,
-             d.MaterialID, d.Quantity, m.MaterialName, d.LocationCode
-      FROM RawMaterialOutbound o
-      JOIN RawMaterialOutboundDetail d ON o.OutboundID = d.OutboundID
-      LEFT JOIN RawMaterial m ON d.MaterialID = m.MaterialID
+             d.ItemID, d.Quantity, m.ItemName as MaterialName, d.LocationCode
+      FROM OutboundOrder o
+      JOIN OutboundOrderDetail d ON o.OutboundID = d.OutboundID
+      LEFT JOIN Item m ON d.ItemID = m.ItemID
       WHERE o.Status = 'approved' 
       AND o.OutboundID NOT IN (SELECT OutboundID FROM WaveDetail)
     `;
@@ -141,7 +141,7 @@ router.post('/waves', async (req, res) => {
         );
         // 3. 将原出库单状态更新为 Picking
         await connection.execute(
-          'UPDATE RawMaterialOutbound SET Status = ? WHERE OutboundID = ?',
+          'UPDATE OutboundOrder SET Status = ? WHERE OutboundID = ?',
           ['Picking', outId]
         );
       }
@@ -167,11 +167,11 @@ router.get('/waves/:id/pick-map', async (req, res) => {
     
     // 获取该波次下所有的待拣货库位和物料
     const sql = `
-      SELECT d.LocationCode, m.MaterialName, d.Quantity, o.OutboundNo
+      SELECT d.LocationCode, m.ItemName as MaterialName, d.Quantity, o.OutboundNo
       FROM WaveDetail wd
-      JOIN RawMaterialOutbound o ON wd.OutboundID = o.OutboundID
-      JOIN RawMaterialOutboundDetail d ON o.OutboundID = d.OutboundID
-      LEFT JOIN RawMaterial m ON d.MaterialID = m.MaterialID
+      JOIN OutboundOrder o ON wd.OutboundID = o.OutboundID
+      JOIN OutboundOrderDetail d ON o.OutboundID = d.OutboundID
+      LEFT JOIN Item m ON d.ItemID = m.ItemID
       WHERE wd.WaveID = ? AND d.LocationCode IS NOT NULL
     `;
     const items = await executeQuery(sql, [waveId]);
@@ -236,7 +236,7 @@ router.put('/waves/:id/complete', async (req, res) => {
       
       for (const d of details) {
         await connection.execute(
-          'UPDATE RawMaterialOutbound SET Status = ? WHERE OutboundID = ?',
+          'UPDATE OutboundOrder SET Status = ? WHERE OutboundID = ?',
           ['Completed', d.OutboundID]
         );
         // 库存扣减等逻辑由于在之前单据审核时已经做了预扣减，此处仅改变业务单据状态

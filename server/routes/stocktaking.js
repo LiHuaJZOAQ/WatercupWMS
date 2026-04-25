@@ -83,18 +83,11 @@ router.get('/stocktaking/:id', async (req, res) => {
         sd.DetailID as id, sd.ItemType as itemType, sd.ItemID as itemId,
         sd.SystemQuantity as systemQuantity, sd.ActualQuantity as actualQuantity, sd.DifferenceQuantity as difference,
         l.LocationCode as locationCode, sd.BatchNumber as batchNo, sd.Remarks as remarks,
-        CASE 
-          WHEN sd.ItemType = 'RawMaterial' THEN rm.MaterialName
-          WHEN sd.ItemType = 'FinishedProduct' THEN fp.ProductName
-        END as itemName,
-        CASE 
-          WHEN sd.ItemType = 'RawMaterial' THEN rm.MaterialCode
-          WHEN sd.ItemType = 'FinishedProduct' THEN fp.ProductCode
-        END as itemCode
+        i.ItemName as itemName,
+        i.ItemCode as itemCode
       FROM StocktakingDetail sd
       LEFT JOIN Location l ON sd.LocationID = l.LocationID
-      LEFT JOIN RawMaterial rm ON sd.ItemType = 'RawMaterial' AND sd.ItemID = rm.MaterialID
-      LEFT JOIN FinishedProduct fp ON sd.ItemType = 'FinishedProduct' AND sd.ItemID = fp.ProductID
+      LEFT JOIN Item i ON sd.ItemID = i.ItemID
       WHERE sd.StocktakingID = ?
     `;
     const details = await executeQuery(detailsSql, [id]);
@@ -144,11 +137,9 @@ router.put('/stocktaking/:id/audit', async (req, res) => {
       for (const item of details) {
         if (parseFloat(item.DifferenceQuantity) !== 0) {
           // 更新库存
-          const invField = item.ItemType === 'RawMaterial' ? 'MaterialID' : 'FinishedProductID';
-          
           const inventoryCheck = await executeQuery(
-            `SELECT * FROM Inventory WHERE ${invField} = ? AND WarehouseID = ? AND LocationID = ?`,
-            [item.ItemID, stocktaking.WarehouseID, item.LocationID]
+            `SELECT * FROM Inventory WHERE ItemID = ? AND LocationID = ?`,
+            [item.ItemID, item.LocationID]
           );
 
           if (inventoryCheck.length > 0) {

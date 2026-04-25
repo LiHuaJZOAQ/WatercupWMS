@@ -91,7 +91,7 @@
         <el-table-column prop="tasks" label="任务明细">
           <template #default="{ row }">
             <div v-for="(task, idx) in row.tasks" :key="idx">
-              {{ task.MaterialName }} - 需取: <b>{{ task.Quantity }}</b> (订单: {{ task.OutboundNo }})
+              {{ task.ItemName }} - 需取: <b>{{ task.Quantity }}</b> (订单: {{ task.OutboundNo }})
             </div>
           </template>
         </el-table-column>
@@ -112,7 +112,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import moment from 'moment';
 import api from '@/api';
-import PickPathMap from './PickPathMap.vue';
+import PickPathMap from '../PickPathMap.vue';
 
 const filter = reactive({ status: '' });
 const tableData = ref([]);
