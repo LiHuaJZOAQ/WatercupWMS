@@ -20,6 +20,7 @@ app.use('/', require('./routes/base'));
 app.use("/api", authenticateToken);
 
 // 注册业务路由，统一挂载在 /api 下
+app.use('/api', require('./routes/dashboard'));
 app.use('/api', require('./routes/users'));
 app.use('/api', require('./routes/partners'));
 app.use('/api', require('./routes/items'));
