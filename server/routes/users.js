@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require('../config/db');
 const { JWT_SECRET } = require('../config/env');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
-const { compare } = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { sign, verify } = require('jsonwebtoken');
 
 // ====================================
@@ -31,11 +31,10 @@ router.post('/users/login', async (req, res) => {
 
     const user = rows[0];
     
-    // 验证密码 (假设密码已经使用bcrypt加密)
-    // 注意：如果数据库中的密码没有使用bcrypt加密，需要调整此逻辑
-    const passwordMatch = await compare(password, user.PasswordHash);
+    // 使用 bcrypt 校验密码
+    const isMatch = await bcrypt.compare(password, user.PasswordHash);
     
-    if (!passwordMatch) {
+    if (!isMatch) {
       return res.status(401).json({ message: '用户名或密码错误' });
     }
 

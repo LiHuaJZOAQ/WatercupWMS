@@ -174,9 +174,12 @@
           </el-table-column>
           <el-table-column label="操作" width="200" fixed="right" align="center">
             <template #default="{ row }">
-              <el-button size="small" link type="primary" @click="handleEdit(row)">
-                编辑
-              </el-button>
+              <el-button size="small"<el-button link type="primary" @click="handlePrint(row)">
+              <el-icon><Printer /></el-icon>
+            </el-button>
+            <el-button link type="primary" @click="handleEdit(row)">
+              编辑
+            </el-button>
               <el-button size="small" link type="info" @click="handleLocationDetail(row)">
                 详情
               </el-button>
@@ -387,6 +390,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Download, Refresh, Search, Printer } from '@element-plus/icons-vue'
 
 // 使用动态导入处理request模块，确保兼容性
 const getRequestModule = async () => {
@@ -874,6 +878,44 @@ const handleExport = async () => {
 const handleLocationMap = () => {
   ElMessage.info('库位地图功能开发中')
 }
+
+// ===== 打印功能 (Print Barcode) =====
+const handlePrint = (row) => {
+  const barcodeUrl = `http://localhost:3000/api/print/barcode?text=${row.LocationCode}&type=code128&scale=4&height=12`;
+  
+  const printWindow = window.open('', '_blank');
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>库位条码打印</title>
+      <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .label { border: 2px solid #000; padding: 20px; width: 300px; text-align: center; border-radius: 10px; }
+        .title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .zone { font-size: 18px; margin-bottom: 15px; color: #555; }
+        img { max-width: 100%; height: auto; }
+        @media print {
+          @page { size: 100mm 60mm; margin: 0; }
+          body { height: auto; }
+          .label { border: none; width: 100%; height: 100%; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="label">
+        <div class="title">WMS 通用库位标签</div>
+        <div class="zone">${row.WarehouseType === 'Normal' ? '标准库区' : row.WarehouseType}</div>
+        <img src="${barcodeUrl}" alt="Barcode" onload="window.print(); setTimeout(() => window.close(), 500);" />
+        <div style="margin-top:10px;font-size:12px;color:#888;">扫码绑定作业</div>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  printWindow.document.write(html);
+  printWindow.document.close();
+};
 
 const showMoreMaterials = (row) => {
   selectedLocationMaterials.value = row.materialInfo

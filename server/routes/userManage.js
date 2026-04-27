@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 const { createResponse, successResponse, errorResponse, formatDateTime, validateRequired, executeQuery, executeTransaction } = require('../utils');
-const { compare } = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // ====================================
 // 系统设置 - 用户管理接口
@@ -71,8 +71,9 @@ router.post('/users', async (req, res) => {
     const checkResult = await executeQuery('SELECT UserID FROM User WHERE Username = ?', [username]);
     if (checkResult.length > 0) return res.status(400).json(errorResponse('用户名已存在', 400));
 
-    // 使用简单的明文存储作为示例 (实际应使用 bcrypt 加密)
-    const passwordHash = password; 
+    // 使用 bcrypt 进行密码哈希加密
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
 
     const insertResult = await executeQuery(
       `INSERT INTO User (Username, PasswordHash, Email, FullName, Phone, Department, Position, IsActive, CreatedAt)
@@ -98,12 +99,23 @@ router.post('/users', async (req, res) => {
 router.put('/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { email, fullName, phone, department, position, isActive, roleIds } = req.body;
+    const { email, fullName, phone, department, position, isActive, roleIds, password } = req.body;
 
-    await executeQuery(
-      `UPDATE User SET Email = ?, FullName = ?, Phone = ?, Department = ?, Position = ?, IsActive = ?, UpdatedAt = NOW() WHERE UserID = ?`,
-      [email || null, fullName || '', phone || '', department || '', position || '', isActive !== undefined ? isActive : 1, id]
-    );
+    let sql = `UPDATE User SET Email = ?, FullName = ?, Phone = ?, Department = ?, Position = ?, IsActive = ?, UpdatedAt = NOW()`;
+    const params = [email || null, fullName || '', phone || '', department || '', position || '', isActive !== undefined ? isActive : 1];
+
+    // 如果提供了新密码，则一并更新并哈希加密
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, salt);
+      sql += `, PasswordHash = ?`;
+      params.push(passwordHash);
+    }
+
+    sql += ` WHERE UserID = ?`;
+    params.push(id);
+
+    await executeQuery(sql, params);
 
     if (roleIds !== undefined) {
       await executeQuery('DELETE FROM UserRole WHERE UserID = ?', [id]);
