@@ -3,6 +3,9 @@ import path from './path';
 
 
 const api={
+    // 仪表盘数据
+    getDashboardSummary: () => axios.get("/dashboard/summary"),
+    
     // 登录
     login: (data: any) => {
         return axios.post("/users/login", data);
