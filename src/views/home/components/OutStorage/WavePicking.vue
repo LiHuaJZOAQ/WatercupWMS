@@ -112,7 +112,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import moment from 'moment';
 import api from '@/api';
-import PickPathMap from './PickPathMap.vue';
+import PickPathMap from '../PickPathMap.vue';
 
 const filter = reactive({ status: '' });
 const tableData = ref([]);
