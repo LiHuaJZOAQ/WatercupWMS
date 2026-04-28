@@ -881,7 +881,7 @@ const handleLocationMap = () => {
 
 // ===== 打印功能 (Print Barcode) =====
 const handlePrint = (row) => {
-  const barcodeUrl = `http://localhost:3000/api/print/barcode?text=${row.LocationCode}&type=code128&scale=4&height=12`;
+  const barcodeUrl = `/api/print/barcode?text=${row.LocationCode}&type=code128&scale=4&height=12`;
   
   const printWindow = window.open('', '_blank');
   const html = `

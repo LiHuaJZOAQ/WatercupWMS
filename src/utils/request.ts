@@ -57,7 +57,7 @@ const errorHandler = (status: number, info: any) => {
 };
 
 const service = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: "/api",
   timeout: 10000, // 稍微延长超时时间，适应复杂业务
 });
 

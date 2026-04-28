@@ -7,7 +7,9 @@
 // src/api/path.ts - API路径配置
 export const API_PATHS = {
     // 基础配置
-    BASE_URL: 'http://localhost:3000',
+    BASE_URL: (typeof window !== 'undefined' && window.location)
+      ? `${window.location.protocol}//${window.location.hostname}:3000`
+      : 'http://127.0.0.1:3000',
     
     // 用户认证
     AUTH: {

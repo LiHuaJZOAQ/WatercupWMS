@@ -17,10 +17,8 @@
           </el-icon>
           <span>基础数据</span>
         </template>
-        <el-menu-item index="基础数据/供应商管理">供应商管理</el-menu-item>
-        <el-menu-item index="基础数据/客户管理">客户管理</el-menu-item>
+        <el-menu-item index="基础数据/往来单位管理">往来单位管理</el-menu-item>
         <el-menu-item index="基础数据/部门管理">部门管理</el-menu-item>
-        <el-menu-item index="基础数据/加工厂管理">加工厂管理</el-menu-item>
         <el-menu-item index="基础数据/商品档案">商品档案 (SKU)</el-menu-item>
       </el-sub-menu>
       <el-sub-menu index="入库管理">
@@ -31,8 +29,6 @@
           <span>入库管理</span>
         </template>
         <el-menu-item index="入库管理/通用入库单">入库单管理</el-menu-item>
-        <el-menu-item index="入库管理/产品入库">产品入库</el-menu-item>
-        <el-menu-item index="入库管理/其他入库">其他入库</el-menu-item>
       </el-sub-menu>
       <el-sub-menu index="出库管理">
         <template #title>
@@ -42,8 +38,6 @@
           <span>出库管理</span>
         </template>
         <el-menu-item index="出库管理/通用出库单">出库单管理</el-menu-item>
-        <el-menu-item index="出库管理/产品出库">产品出库</el-menu-item>
-        <el-menu-item index="出库管理/其他出库">其他出库</el-menu-item>
         <el-menu-item index="出库管理/波次拣货">智能波次拣货 (推荐)</el-menu-item>
       </el-sub-menu>
       <el-sub-menu index="盘点管理">
@@ -54,8 +48,6 @@
           <span>盘点管理</span>
         </template>
         <el-menu-item index="盘点管理/通用盘点">库存盘点作业</el-menu-item>
-        <el-menu-item index="盘点管理/产品盘点">产品盘点</el-menu-item>
-        <el-menu-item index="盘点管理/其他盘点">其他盘点</el-menu-item>
       </el-sub-menu>
       <el-sub-menu index="库存管理">
         <template #title>
@@ -65,8 +57,6 @@
           <span>库存管理</span>
         </template>
         <el-menu-item index="库存管理/全局库存">全局库存查询</el-menu-item>
-        <el-menu-item index="库存管理/产品库存">产品库存</el-menu-item>
-        <el-menu-item index="库存管理/其他库存">其他库存</el-menu-item>
       </el-sub-menu>
       <el-sub-menu index="仓位管理">
         <template #title>
@@ -75,7 +65,7 @@
           </el-icon>
           <span>仓位管理</span>
         </template>
-        <el-menu-item index="仓位管理/原料仓位">一般仓位</el-menu-item>
+        <el-menu-item index="仓位管理/仓库库位">仓库库位</el-menu-item>
         <!-- <el-menu-item index="仓位管理/产品仓位">仓位</el-menu-item> -->
         
       </el-sub-menu>
@@ -116,7 +106,6 @@ import {
 } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import LogoutView from '@/views/LogoutView.vue'
-import { fa } from 'element-plus/es/locales.mjs'
 
 const LogoutState = ref(false)
 const selectedIndex = ref('首页')
@@ -128,32 +117,20 @@ const handleMenuClick = (index: string) => {
   if (index === "首页") {
     console.log("首页")
     sendChangeView("MainView")
-  } else if (index === "基础数据/供应商管理") {
+  } else if (index === "基础数据/往来单位管理") {
     sendChangeView("SupplierManage")
-  } else if (index === "基础数据/客户管理") {
-    sendChangeView("CustomerManage")
   } else if (index === "基础数据/部门管理") {
     sendChangeView("DepartmentManage")
-  } else if (index === "基础数据/加工厂管理") {
-    sendChangeView("ProcessingFactoryManage")
-  } else if (index === "基础数据/成品档案") {
+  } else if (index === "基础数据/商品档案") {
     sendChangeView("FinishedProductManage")
-  } else if (index === "入库管理/原料入库") {
+  } else if (index === "入库管理/通用入库单") {
     sendChangeView("InStorageRawMaterial")
-  } else if (index === "入库管理/产品入库") {
-    sendChangeView("InStorageFinishedProduct")
   } else if (index === '出库管理/通用出库单') {
     sendChangeView('OutStorageRawMaterial')
-  } else if (index === '出库管理/成品出库') {
-    sendChangeView('OutStorageFinishedProduct')
-  } else if (index === '出库管理/产品出库') {
-    sendChangeView('OutStorageFinishedProduct')
   } else if (index === '出库管理/波次拣货') {
     sendChangeView('WavePicking')
   } else if (index === '盘点管理/通用盘点') {
     sendChangeView('CheckStorageRawMaterial')
-  } else if (index === '盘点管理/产品盘点') {
-    sendChangeView('CheckStorageFinishedProduct')
   } else if (index === '库存管理/全局库存') {
     sendChangeView('InventoryRawMaterial')
   } else if (index === '仓位管理/仓库库位') {
