@@ -1,147 +1,195 @@
 <template>
-  <div class="erp-container">
+  <div class="md3-page">
+    <md-elevated-card class="md3-card">
     <div class="filter-card">
       <div class="filter-row">
         <div class="filter-col">
           <label>盘点单号：</label>
-          <el-input v-model="filter.stocktakingNo" placeholder="请输入单号" clearable />
+          <md-outlined-text-field v-model="filter.stocktakingNo" placeholder="请输入单号" />
         </div>
         <div class="filter-col">
           <label>状态：</label>
-          <el-select v-model="filter.status" placeholder="请选择" clearable>
-            <el-option label="草稿" value="Draft"></el-option>
-            <el-option label="盘点中" value="Processing"></el-option>
-            <el-option label="待审核" value="Pending"></el-option>
-            <el-option label="已完成" value="Completed"></el-option>
-            <el-option label="已取消" value="Cancelled"></el-option>
-          </el-select>
+          <md-outlined-select v-model="filter.status">
+            <md-select-option value="">
+              <div slot="headline">请选择</div>
+            </md-select-option>
+            <md-select-option value="Draft"><div slot="headline">草稿</div></md-select-option>
+            <md-select-option value="Processing"><div slot="headline">盘点中</div></md-select-option>
+            <md-select-option value="Pending"><div slot="headline">待审核</div></md-select-option>
+            <md-select-option value="Completed"><div slot="headline">已完成</div></md-select-option>
+            <md-select-option value="Cancelled"><div slot="headline">已取消</div></md-select-option>
+          </md-outlined-select>
         </div>
       </div>
       <div class="filter-actions">
-        <el-button type="primary" @click="fetchData"><i class="el-icon-search"></i> 查询</el-button>
-        <el-button @click="resetFilter"><i class="el-icon-refresh"></i> 重置</el-button>
+        <md-filled-button :disabled="loading" @click="fetchData">
+          <span v-if="!loading">查询</span>
+          <span v-else class="md3-btn-loading">
+            <md-circular-progress indeterminate></md-circular-progress>
+            查询中
+          </span>
+        </md-filled-button>
+        <md-text-button @click="resetFilter">重置</md-text-button>
       </div>
     </div>
+    </md-elevated-card>
 
-    <div class="action-card">
-      <el-button class="action-btn" type="success" @click="handleCreate">
-        <i class="el-icon-plus"></i> 新建盘点
-      </el-button>
-    </div>
+    <md-elevated-card class="md3-card md3-card--tight">
+      <div class="action-card md3-action-bar">
+        <div class="md3-action-title">通用盘点</div>
+        <md-filled-tonal-button @click="handleCreate">
+          <md-icon slot="icon">add</md-icon>
+          新建盘点
+        </md-filled-tonal-button>
+      </div>
+    </md-elevated-card>
 
+    <md-elevated-card class="md3-card md3-table-card">
     <div class="data-container">
-      <el-table :data="tableData" border stripe v-loading="loading">
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="stocktakingNo" label="盘点单号" width="160" />
-        <el-table-column prop="type" label="盘点类型" width="120">
-          <template #default="{ row }">
-            {{ row.type === 'Full' ? '全盘' : '抽盘' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="warehouseName" label="仓库" min-width="120" />
-        <el-table-column prop="operatorName" label="操作人" width="120" />
-        <el-table-column prop="stocktakingDate" label="盘点时间" width="180" />
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="getStatusTagType(row.status)">
-              {{ statusMap[row.status] || row.status }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="220" fixed="right">
-          <template #default="{ row }">
-            <el-button link type="primary" @click="handleDetails(row)">详情</el-button>
-            <el-button
-              link
-              type="success"
-              @click="handleAudit(row)"
-              :disabled="row.status !== 'Pending' && row.status !== 'Processing'"
-            >审核</el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(row)"
-              :disabled="row.status === 'Completed'"
-            >删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <table class="md3-table" style="width: 100%">
+        <thead>
+          <tr>
+            <th width="55"><input type="checkbox" @change="toggleAllSelection($event)" :checked="isAllSelected" /></th>
+            <th width="160">盘点单号</th>
+            <th width="120">盘点类型</th>
+            <th>仓库</th>
+            <th width="120">操作人</th>
+            <th width="180">盘点时间</th>
+            <th width="100">状态</th>
+            <th width="220">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="loading"><td colspan="8" style="text-align: center">加载中...</td></tr>
+          <tr v-else-if="!tableData.length"><td colspan="8" style="text-align: center">暂无数据</td></tr>
+          <tr v-for="(row, index) in tableData" :key="row.id" :class="index % 2 === 0 ? 'even-row' : 'odd-row'">
+            <td><input type="checkbox" :value="row" v-model="selectedRows" /></td>
+            <td>{{ row.stocktakingNo }}</td>
+            <td>{{ row.type === 'Full' ? '全盘' : '抽盘' }}</td>
+            <td>{{ row.warehouseName }}</td>
+            <td>{{ row.operatorName }}</td>
+            <td>{{ row.stocktakingDate }}</td>
+            <td>
+              <span :class="['status-tag', getStatusTagType(row.status)]">
+                {{ statusMap[row.status] || row.status }}
+              </span>
+            </td>
+            <td>
+              <md-text-button class="action-link" @click="handleDetails(row)">详情</md-text-button>
+              <md-text-button class="action-link success" @click="handleAudit(row)" :disabled="row.status !== 'Pending' && row.status !== 'Processing'">审核</md-text-button>
+              <md-text-button class="action-link danger" @click="handleDelete(row)" :disabled="row.status === 'Completed'">删除</md-text-button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+    </md-elevated-card>
 
+    <md-elevated-card class="md3-card md3-card--tight">
     <div class="pagination-container">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
+      <MdPagination
+        :current-page="currentPage"
         :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
+        :page-size="pageSize"
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       />
     </div>
+    </md-elevated-card>
 
     <!-- 详情弹窗 -->
-    <el-dialog title="盘点单详情" v-model="detailsDialogVisible" width="70%">
-      <div v-if="detailsData" class="details-content">
-        <el-descriptions title="基础信息" :column="2" border>
-          <el-descriptions-item label="盘点单号">{{ detailsData.stocktakingNo }}</el-descriptions-item>
-          <el-descriptions-item label="状态">
-            <el-tag :type="getStatusTagType(detailsData.status)">
+    <md-dialog :open="detailsDialogVisible" @closed="detailsDialogVisible = false">
+      <div slot="headline">盘点单详情</div>
+      <div slot="content" v-if="detailsData" class="details-content">
+        <div class="details-grid">
+          <div class="detail-item"><strong>盘点单号：</strong>{{ detailsData.stocktakingNo }}</div>
+          <div class="detail-item">
+            <strong>状态：</strong>
+            <span :class="['status-tag', getStatusTagType(detailsData.status)]">
               {{ statusMap[detailsData.status] || detailsData.status }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="类型">{{ detailsData.type === 'Full' ? '全盘' : '抽盘' }}</el-descriptions-item>
-          <el-descriptions-item label="仓库">{{ detailsData.warehouseName || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="盘点时间">{{ detailsData.stocktakingDate }}</el-descriptions-item>
-          <el-descriptions-item label="备注">{{ detailsData.remarks || '无' }}</el-descriptions-item>
-        </el-descriptions>
+            </span>
+          </div>
+          <div class="detail-item"><strong>类型：</strong>{{ detailsData.type === 'Full' ? '全盘' : '抽盘' }}</div>
+          <div class="detail-item"><strong>仓库：</strong>{{ detailsData.warehouseName || '-' }}</div>
+          <div class="detail-item"><strong>盘点时间：</strong>{{ detailsData.stocktakingDate }}</div>
+          <div class="detail-item"><strong>备注：</strong>{{ detailsData.remarks || '无' }}</div>
+        </div>
 
         <h4 style="margin-top: 20px;">盘点明细</h4>
-        <el-table :data="detailsData.details" border stripe style="width: 100%; margin-top: 10px;">
-          <el-table-column prop="itemName" label="商品名称" />
-          <el-table-column prop="itemCode" label="商品编号" />
-          <el-table-column prop="locationCode" label="库位" />
-          <el-table-column prop="systemQuantity" label="系统库存" align="right" />
-          <el-table-column prop="actualQuantity" label="实际库存" align="right" />
-          <el-table-column prop="difference" label="差异数" align="right">
-            <template #default="{ row }">
-              <span :style="{ color: row.difference > 0 ? 'green' : (row.difference < 0 ? 'red' : 'black') }">
-                {{ row.difference > 0 ? '+' : '' }}{{ row.difference }}
-              </span>
-            </template>
-          </el-table-column>
-        </el-table>
+        <table class="md3-table" style="width: 100%; margin-top: 10px;">
+          <thead>
+            <tr>
+              <th>商品名称</th>
+              <th>商品编号</th>
+              <th>库位</th>
+              <th>系统库存</th>
+              <th>实际库存</th>
+              <th>差异数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, idx) in detailsData.details" :key="idx">
+              <td>{{ row.itemName }}</td>
+              <td>{{ row.itemCode }}</td>
+              <td>{{ row.locationCode }}</td>
+              <td align="right">{{ row.systemQuantity }}</td>
+              <td align="right">{{ row.actualQuantity }}</td>
+              <td align="right">
+                <span :style="{ color: row.difference > 0 ? 'green' : (row.difference < 0 ? 'red' : 'black') }">
+                  {{ row.difference > 0 ? '+' : '' }}{{ row.difference }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <template #footer>
-        <el-button @click="detailsDialogVisible = false">关闭</el-button>
-      </template>
-    </el-dialog>
+      <div slot="actions">
+        <md-text-button @click="detailsDialogVisible = false">关闭</md-text-button>
+      </div>
+    </md-dialog>
 
     <!-- 审核弹窗 -->
-    <el-dialog title="盘点审核" v-model="auditDialogVisible" width="30%">
-      <el-form :model="auditForm" label-width="100px">
-        <el-form-item label="审核操作" required>
-          <el-radio-group v-model="auditForm.action">
-            <el-radio label="approve">通过并更新库存</el-radio>
-            <el-radio label="reject">驳回</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="审核意见">
-          <el-input type="textarea" v-model="auditForm.reason" placeholder="请输入审核意见（驳回必填）" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="auditDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmAudit">确定</el-button>
-      </template>
-    </el-dialog>
+    <md-dialog :open="auditDialogVisible" @closed="auditDialogVisible = false">
+      <div slot="headline">盘点审核</div>
+      <div slot="content">
+        <form class="md3-form">
+          <div class="form-item">
+            <label>审核操作 <span class="required">*</span></label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" v-model="auditForm.action" value="approve" /> 通过并更新库存
+              </label>
+              <label>
+                <input type="radio" v-model="auditForm.action" value="reject" /> 驳回
+              </label>
+            </div>
+          </div>
+          <div class="form-item">
+            <label>审核意见</label>
+            <md-outlined-text-field
+              type="textarea"
+              v-model="auditForm.reason"
+              rows="3"
+              placeholder="请输入审核意见（驳回必填）"
+              style="width: 100%"
+            />
+          </div>
+        </form>
+      </div>
+      <div slot="actions">
+        <md-text-button @click="auditDialogVisible = false">取消</md-text-button>
+        <md-filled-button @click="confirmAudit">确定</md-filled-button>
+      </div>
+    </md-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ref, reactive, onMounted, computed } from 'vue';
 import api from '@/api';
+import { notifyError, notifySuccess, notifyWarning } from '@/utils/notify';
+import MdPagination from '@/components/MdPagination.vue';
 
 const filter = reactive({
   stocktakingNo: '',
@@ -153,6 +201,19 @@ const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
+const selectedRows = ref([]);
+
+const isAllSelected = computed(() => {
+  return tableData.value.length > 0 && selectedRows.value.length === tableData.value.length;
+});
+
+const toggleAllSelection = (event) => {
+  if (event.target.checked) {
+    selectedRows.value = [...tableData.value];
+  } else {
+    selectedRows.value = [];
+  }
+};
 
 const detailsDialogVisible = ref(false);
 const detailsData = ref(null);
@@ -194,7 +255,7 @@ const fetchData = async () => {
     tableData.value = res.data?.items || [];
     total.value = res.data?.total || 0;
   } catch (error) {
-    ElMessage.error('获取列表失败');
+    notifyError('获取列表失败');
   } finally {
     loading.value = false;
   }
@@ -217,7 +278,7 @@ const handleCurrentChange = (val) => {
 };
 
 const handleCreate = () => {
-  ElMessage.warning('新建盘点作业功能暂未实现');
+  notifyWarning('新建盘点作业功能暂未实现');
 };
 
 const handleDetails = async (row) => {
@@ -226,7 +287,7 @@ const handleDetails = async (row) => {
     detailsData.value = res.data;
     detailsDialogVisible.value = true;
   } catch (error) {
-    ElMessage.error('获取详情失败');
+    notifyError('获取详情失败');
   }
 };
 
@@ -239,29 +300,29 @@ const handleAudit = (row) => {
 
 const confirmAudit = async () => {
   if (auditForm.action === 'reject' && !auditForm.reason) {
-    return ElMessage.warning('驳回时必须填写审核意见');
+    return notifyWarning('驳回时必须填写审核意见');
   }
   try {
     await api.auditStocktaking(auditForm.id, {
       action: auditForm.action,
       reason: auditForm.reason
     });
-    ElMessage.success('审核完成');
+    notifySuccess('审核完成');
     auditDialogVisible.value = false;
     fetchData();
   } catch (error) {
-    ElMessage.error(error.response?.data?.message || '审核失败');
+    notifyError(error.response?.data?.message || '审核失败');
   }
 };
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm(`确定要删除单号 \${row.stocktakingNo} 吗？`, '警告', { type: 'error' });
+    if(!window.confirm(`确定要删除单号 ${row.stocktakingNo} 吗？`)) return;
     await api.deleteStocktaking(row.id);
-    ElMessage.success('删除成功');
+    notifySuccess('删除成功');
     fetchData();
   } catch (error) {
-    if (error !== 'cancel') ElMessage.error('删除失败');
+    if (error !== 'cancel') notifyError('删除失败');
   }
 };
 
@@ -271,44 +332,197 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.erp-container {
+.md3-page {
   display: flex;
   flex-direction: column;
-  background-color: #f0f2f5;
-  padding: 16px;
-  min-height: 100vh;
+  gap: 12px;
 }
-.filter-card {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 16px;
+
+.md3-card {
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--md-sys-color-surface-container-lowest);
+  padding: 14px;
 }
+
+.md3-card--tight {
+  padding: 12px 14px;
+}
+
+.md3-table-card {
+  padding: 0;
+}
+
+.md3-btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.md3-btn-loading md-circular-progress {
+  --md-circular-progress-size: 18px;
+}
+
 .filter-row {
   display: flex;
   gap: 20px;
   margin-bottom: 16px;
   .filter-col {
     display: flex;
-    align-items: center;
-    label { width: 80px; text-align: right; margin-right: 12px; }
+    flex-direction: column;
+    flex: 1;
+    label { 
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface-variant);
+      margin-bottom: 8px;
+    }
+    md-outlined-text-field, md-outlined-select {
+      width: 100%;
+    }
   }
 }
 .filter-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
 }
 .action-card {
-  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+.md3-action-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+}
+
 .data-container {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 20px;
+  flex-grow: 1;
+  overflow: auto;
 }
+
+.md3-table {
+  border-collapse: collapse;
+  th {
+    background-color: #f8f9fc;
+    color: #333;
+    font-weight: 600;
+    padding: 12px;
+    border-bottom: 2px solid #e4e7ed;
+    font-size: 14px;
+    text-align: left;
+  }
+  td {
+    padding: 12px;
+    color: #444;
+    font-size: 14px;
+    border-bottom: 1px solid #e4e7ed;
+  }
+  tr:hover {
+    background-color: #f5f7fa;
+  }
+  .even-row {
+    background-color: #fafafa;
+  }
+  .odd-row {
+    background-color: #ffffff;
+  }
+}
+
 .pagination-container {
   display: flex;
   justify-content: flex-end;
-  padding: 20px 0;
+}
+
+.action-link {
+  --md-text-button-label-text-size: 14px;
+}
+.action-link.success {
+  --md-text-button-label-text-color: #67c23a;
+}
+.action-link.warning {
+  --md-text-button-label-text-color: #e6a23c;
+}
+.action-link.danger {
+  --md-text-button-label-text-color: #f56c6c;
+}
+
+.status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.status-tag.info {
+  background-color: #f4f4f5;
+  color: #909399;
+  border: 1px solid #e9e9eb;
+}
+.status-tag.primary {
+  background-color: #ecf5ff;
+  color: #409eff;
+  border: 1px solid #d9ecff;
+}
+.status-tag.warning {
+  background-color: #fdf6ec;
+  color: #e6a23c;
+  border: 1px solid #faecd8;
+}
+.status-tag.success {
+  background-color: #f0f9eb;
+  color: #67c23a;
+  border: 1px solid #e1f3d8;
+}
+.status-tag.danger {
+  background-color: #fef0f0;
+  color: #f56c6c;
+  border: 1px solid #fde2e2;
+}
+
+.details-content {
+  padding: 0 20px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.md3-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  label {
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .required {
+    color: #f56c6c;
+  }
+}
+
+.radio-group {
+  display: flex;
+  gap: 16px;
+  label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: normal;
+  }
 }
 </style>

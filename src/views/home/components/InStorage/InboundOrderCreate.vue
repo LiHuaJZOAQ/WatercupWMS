@@ -1,216 +1,200 @@
 <template>
   <div class="create-form">
-    <el-form 
-      ref="formRef" 
-      :model="formData" 
-      :rules="rules" 
-      label-width="120px"
-      label-position="right"
-    >
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="入库单号" prop="warehouseReceiptNo">
-              <el-input 
-                v-model="formData.warehouseReceiptNo" 
-                placeholder="系统自动生成" 
-                disabled
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="入库类型" prop="warehouseType">
-              <el-select 
-                v-model="formData.warehouseType" 
-                placeholder="请选择入库类型"
-                clearable
-              >
-                <el-option
-                  v-for="item in options.warehouseTypes"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="入库仓库" prop="warehouse">
-              <el-select 
-                v-model="formData.warehouse" 
-                placeholder="请选择入库仓库"
-                clearable
-              >
-                <el-option
-                  v-for="item in options.warehouses"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="入库方式" prop="warehouseMethod">
-              <el-select 
-                v-model="formData.warehouseMethod" 
-                placeholder="请选择入库方式"
-                clearable
-              >
-                <el-option
-                  v-for="item in options.warehouseMethods"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="供应商" prop="supplier">
-              <el-select 
-                v-model="formData.supplier" 
-                placeholder="请选择供应商"
-                clearable
-                filterable
-              >
-                <el-option
-                  v-for="item in options.suppliers"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="生产商" prop="manufacturer">
-              <el-select 
-                v-model="formData.manufacturer" 
-                placeholder="请选择生产商"
-                clearable
-                filterable
-              >
-                <el-option
-                  v-for="item in options.manufacturers"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-form-item label="备注" prop="remark">
-          <el-input
-            v-model="formData.remark"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入备注信息"
+    <form class="md3-form" @submit.prevent="submitForm">
+      <div class="form-grid">
+        <div class="form-item">
+          <label>入库单号</label>
+          <md-outlined-text-field 
+            v-model="formData.warehouseReceiptNo" 
+            placeholder="系统自动生成" 
+            disabled
+            style="width: 100%"
           />
-        </el-form-item>
+        </div>
+        <div class="form-item">
+          <label>入库类型 <span class="required">*</span></label>
+          <md-outlined-select v-model="formData.warehouseType" style="width: 100%">
+            <md-select-option value="">
+              <div slot="headline">请选择入库类型</div>
+            </md-select-option>
+            <md-select-option
+              v-for="item in options.warehouseTypes"
+              :key="item.value"
+              :value="item.value"
+            >
+              <div slot="headline">{{ item.label }}</div>
+            </md-select-option>
+          </md-outlined-select>
+        </div>
+
+        <div class="form-item">
+          <label>入库仓库 <span class="required">*</span></label>
+          <md-outlined-select v-model="formData.warehouse" style="width: 100%">
+            <md-select-option value="">
+              <div slot="headline">请选择入库仓库</div>
+            </md-select-option>
+            <md-select-option
+              v-for="item in options.warehouses"
+              :key="item.value"
+              :value="item.value"
+            >
+              <div slot="headline">{{ item.label }}</div>
+            </md-select-option>
+          </md-outlined-select>
+        </div>
+        <div class="form-item">
+          <label>入库方式 <span class="required">*</span></label>
+          <md-outlined-select v-model="formData.warehouseMethod" style="width: 100%">
+            <md-select-option value="">
+              <div slot="headline">请选择入库方式</div>
+            </md-select-option>
+            <md-select-option
+              v-for="item in options.warehouseMethods"
+              :key="item.value"
+              :value="item.value"
+            >
+              <div slot="headline">{{ item.label }}</div>
+            </md-select-option>
+          </md-outlined-select>
+        </div>
+
+        <div class="form-item">
+          <label>供应商 <span class="required">*</span></label>
+          <md-outlined-select v-model="formData.supplier" style="width: 100%">
+            <md-select-option value="">
+              <div slot="headline">请选择供应商</div>
+            </md-select-option>
+            <md-select-option
+              v-for="item in options.suppliers"
+              :key="item.value"
+              :value="item.value"
+            >
+              <div slot="headline">{{ item.label }}</div>
+            </md-select-option>
+          </md-outlined-select>
+        </div>
+        <div class="form-item">
+          <label>生产商 <span class="required">*</span></label>
+          <md-outlined-select v-model="formData.manufacturer" style="width: 100%">
+            <md-select-option value="">
+              <div slot="headline">请选择生产商</div>
+            </md-select-option>
+            <md-select-option
+              v-for="item in options.manufacturers"
+              :key="item.value"
+              :value="item.value"
+            >
+              <div slot="headline">{{ item.label }}</div>
+            </md-select-option>
+          </md-outlined-select>
+        </div>
+      </div>
         
-        <el-divider content-position="left">入库明细</el-divider>
-        
-        <el-table
-          :data="formData.details"
-          border
+      <div class="form-item" style="margin-top: 16px;">
+        <label>备注</label>
+        <md-outlined-text-field
+          v-model="formData.remark"
+          type="textarea"
+          rows="3"
+          placeholder="请输入备注信息"
           style="width: 100%"
-          class="detail-table"
-        >
-          <el-table-column label="序号" type="index" width="60" align="center" />
-          <el-table-column label="原料编号" prop="materialNo" width="150">
-            <template #default="{ row, $index }">
-              <el-select
+        />
+      </div>
+        
+      <div class="divider">入库明细</div>
+      
+      <table class="md3-table detail-table" style="width: 100%">
+        <thead>
+          <tr>
+            <th width="60">序号</th>
+            <th width="200">原料编号</th>
+            <th width="150">原料名称</th>
+            <th width="150">规格型号</th>
+            <th width="80">单位</th>
+            <th width="150">批次号</th>
+            <th width="120">应收数量</th>
+            <th width="80">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row, index) in formData.details" :key="index">
+            <td align="center">{{ index + 1 }}</td>
+            <td>
+              <md-outlined-select
                 v-model="row.materialNo"
-                placeholder="请选择原料"
-                clearable
-                filterable
-                @change="handleMaterialChange($index, row.materialNo)"
+                @change="handleMaterialChange(index, row.materialNo)"
+                style="width: 100%"
               >
-                <el-option
+                <md-select-option value="">
+                  <div slot="headline">请选择原料</div>
+                </md-select-option>
+                <md-select-option
                   v-for="item in options.materials"
                   :key="item.materialNo"
-                  :label="`${item.materialNo} (${item.materialName})`"
                   :value="item.materialNo"
-                />
-              </el-select>
-            </template>
-          </el-table-column>
-          <el-table-column label="原料名称" prop="materialName" width="150">
-            <template #default="{ row }">
-              <el-input v-model="row.materialName" disabled />
-            </template>
-          </el-table-column>
-          <el-table-column label="规格型号" prop="specification" width="150">
-            <template #default="{ row }">
-              <el-input v-model="row.specification" disabled />
-            </template>
-          </el-table-column>
-          <el-table-column label="单位" prop="unit" width="80" align="center">
-            <template #default="{ row }">
-              <el-input v-model="row.unit" disabled />
-            </template>
-          </el-table-column>
-          <el-table-column label="批次号" prop="batchNo" width="150">
-            <template #default="{ row }">
-              <el-input v-model="row.batchNo" placeholder="请输入批次号" />
-            </template>
-          </el-table-column>
-          <el-table-column label="应收数量" prop="expectedQuantity" width="120" align="right">
-            <template #default="{ row }">
-              <el-input-number
-                v-model="row.expectedQuantity"
-                :min="0"
-                :precision="2"
-                controls-position="right"
+                >
+                  <div slot="headline">{{ item.materialNo }} ({{ item.materialName }})</div>
+                </md-select-option>
+              </md-outlined-select>
+            </td>
+            <td>
+              <md-outlined-text-field v-model="row.materialName" disabled style="width: 100%" />
+            </td>
+            <td>
+              <md-outlined-text-field v-model="row.specification" disabled style="width: 100%" />
+            </td>
+            <td align="center">
+              <md-outlined-text-field v-model="row.unit" disabled style="width: 100%" />
+            </td>
+            <td>
+              <md-outlined-text-field v-model="row.batchNo" placeholder="批次号" style="width: 100%" />
+            </td>
+            <td align="right">
+              <md-outlined-text-field
+                type="number"
+                v-model.number="row.expectedQuantity"
+                min="0"
+                step="0.01"
                 style="width: 100%"
               />
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="80" align="center" fixed="right">
-            <template #default="{ $index }">
-              <el-button
-                type="danger"
-                link
-                @click="removeDetail($index)"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+            </td>
+            <td align="center">
+              <md-text-button class="danger-btn" @click="removeDetail(index)">删除</md-text-button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
         
-        <div class="add-detail">
-          <el-button type="primary" link @click="addDetail">
-            <i class="el-icon-plus"></i> 添加明细
-          </el-button>
-        </div>
-      </el-form>
-<div class="form-actions">
-      <el-button @click="handleCancel">取消</el-button>
-      <el-button type="primary" @click="submitForm" :loading="loading">提交</el-button>
+      <div class="add-detail">
+        <md-text-button type="button" @click="addDetail">
+          <md-icon slot="icon">add</md-icon>
+          添加明细
+        </md-text-button>
+      </div>
+    </form>
+    <div class="form-actions">
+      <md-text-button @click="handleCancel">取消</md-text-button>
+      <md-filled-button :disabled="loading" @click="submitForm">
+        <span v-if="!loading">提交</span>
+        <span v-else class="md3-btn-loading">
+          <md-circular-progress indeterminate></md-circular-progress>
+          提交中
+        </span>
+      </md-filled-button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, defineEmits } from 'vue';
-import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import api from '@/api';
+import { notifyError, notifySuccess, notifyWarning } from '@/utils/notify'
 
 const router = useRouter();
 
 const emit = defineEmits(['success', 'cancel']);
 
-const formRef = ref(null);
 const loading = ref(false);
 
 // 表单数据
@@ -231,25 +215,6 @@ const formData = reactive({
       batchNo: '',
       expectedQuantity: 0
     }
-  ]
-});
-
-// 表单验证规则
-const rules = reactive({
-  warehouseType: [
-    { required: true, message: '请选择入库类型', trigger: 'change' }
-  ],
-  warehouse: [
-    { required: true, message: '请选择入库仓库', trigger: 'change' }
-  ],
-  warehouseMethod: [
-    { required: true, message: '请选择入库方式', trigger: 'change' }
-  ],
-  supplier: [
-    { required: true, message: '请选择供应商', trigger: 'change' }
-  ],
-  manufacturer: [
-    { required: true, message: '请选择生产商', trigger: 'change' }
   ]
 });
 
@@ -275,8 +240,7 @@ const fetchOptions = async () => {
     const res = await api.getInboundCreateOptions();
     Object.assign(options, res.data);
   } catch (error) {
-    ElMessage.error('获取选项数据失败');
-    console.error(error);
+    notifyError('获取选项数据失败');
   }
 };
 
@@ -305,7 +269,7 @@ const addDetail = () => {
 // 删除明细行
 const removeDetail = (index) => {
   if (formData.details.length <= 1) {
-    ElMessage.warning('至少保留一条明细');
+    notifyWarning('至少保留一条明细');
     return;
   }
   formData.details.splice(index, 1);
@@ -331,29 +295,35 @@ const handleMaterialChange = (index, materialNo) => {
   }
 };
 
+const validateForm = () => {
+  if (!formData.warehouseType) return '请选择入库类型';
+  if (!formData.warehouse) return '请选择入库仓库';
+  if (!formData.warehouseMethod) return '请选择入库方式';
+  if (!formData.supplier) return '请选择供应商';
+  if (!formData.manufacturer) return '请选择生产商';
+  return null;
+};
+
 // 提交表单
 const submitForm = async () => {
   try {
-    await formRef.value.validate();
+    const errorMsg = validateForm();
+    if (errorMsg) {
+      notifyWarning(errorMsg);
+      return;
+    }
     
     if (formData.details.some(item => !item.materialNo)) {
-      ElMessage.warning('请选择所有明细的原料');
+      notifyWarning('请选择所有明细的原料');
       return;
     }
     
     loading.value = true;
     await api.createInboundOrder(formData);
-    // ElMessage.success('创建成功');
-    // console.log('创建成功:', formData);
-    // emit('success');
-  } catch (error) {
-  //  if (error !== 'validate') {
-  // /    ElMessage.error('创建失败');
-      // console.error(error);
-    // }
-    ElMessage.success('创建成功');
-    console.log('创建成功:', formData);
+    notifySuccess('创建成功');
     emit('success');
+  } catch (error) {
+    notifyError('创建失败');
   } finally {
     loading.value = false;
   }
@@ -366,7 +336,12 @@ const handleCancel = () => {
 
 // 暴露重置方法
 const resetForm = () => {
-  formRef.value?.resetFields();
+  formData.warehouseType = '';
+  formData.warehouse = '';
+  formData.warehouseMethod = '';
+  formData.supplier = '';
+  formData.manufacturer = '';
+  formData.remark = '';
   formData.details = [{
     materialNo: '',
     materialName: '',
@@ -397,41 +372,88 @@ defineExpose({ resetForm });
     margin-top: 20px;
     text-align: right;
     padding-right: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
   }
 }
 
-.form-card {
-  margin-bottom: 20px;
-  
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.md3-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  label {
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+  }
+  .required {
+    color: #f56c6c;
+  }
+}
+
+.md3-btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  md-circular-progress {
+    --md-circular-progress-size: 18px;
+  }
+}
+
+.divider {
+  margin: 24px 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--md-sys-color-primary);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  padding-bottom: 8px;
+}
+
+.md3-table {
+  border-collapse: collapse;
+  th {
+    background-color: #f8f9fc;
+    color: #333;
+    font-weight: 600;
+    padding: 12px;
+    border-bottom: 2px solid #e4e7ed;
+    font-size: 14px;
+    text-align: left;
+  }
+  td {
+    padding: 8px 12px;
+    color: #444;
+    font-size: 14px;
+    border-bottom: 1px solid #e4e7ed;
+  }
+  tr:hover {
+    background-color: #f5f7fa;
   }
 }
 
 .detail-table {
   margin-bottom: 20px;
-  
-  :deep(.el-input__inner) {
-    border: none;
-    padding: 0;
-    height: 32px;
-    line-height: 32px;
-  }
-  
-  :deep(.el-input.is-disabled .el-input__inner) {
-    background-color: transparent;
-    color: #606266;
-  }
+}
+
+.danger-btn {
+  --md-text-button-label-text-color: #f56c6c;
 }
 
 .add-detail {
   margin-top: 10px;
   text-align: center;
-}
-
-.el-divider {
-  margin: 20px 0;
 }
 </style>

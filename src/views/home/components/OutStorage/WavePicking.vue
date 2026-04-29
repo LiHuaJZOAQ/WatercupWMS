@@ -1,118 +1,178 @@
 <template>
-  <div class="erp-container">
+  <div class="md3-page">
+    <md-elevated-card class="md3-card">
     <div class="filter-card">
       <div class="filter-row">
         <div class="filter-col">
           <label>波次状态：</label>
-          <el-select v-model="filter.status" placeholder="请选择状态" clearable>
-            <el-option label="待拣货" value="Pending"></el-option>
-            <el-option label="已完成" value="Completed"></el-option>
-          </el-select>
+          <md-outlined-select v-model="filter.status" style="width: 200px;">
+            <md-select-option value="">
+              <div slot="headline">请选择状态</div>
+            </md-select-option>
+            <md-select-option value="Pending">
+              <div slot="headline">待拣货</div>
+            </md-select-option>
+            <md-select-option value="Completed">
+              <div slot="headline">已完成</div>
+            </md-select-option>
+          </md-outlined-select>
         </div>
       </div>
       <div class="filter-actions">
-        <el-button type="primary" @click="fetchWaves"><i class="el-icon-search"></i> 查询</el-button>
-        <el-button type="success" @click="handleRecommend"><i class="el-icon-magic-stick"></i> 智能推荐波次</el-button>
+        <md-filled-button :disabled="loading" @click="fetchWaves">
+          <span v-if="!loading">查询</span>
+          <span v-else class="md3-btn-loading">
+            <md-circular-progress indeterminate></md-circular-progress>
+            查询中
+          </span>
+        </md-filled-button>
+        <md-filled-tonal-button @click="handleRecommend">
+          <md-icon slot="icon">auto_awesome</md-icon>
+          智能推荐波次
+        </md-filled-tonal-button>
       </div>
     </div>
+    </md-elevated-card>
 
     <!-- 波次列表 -->
+    <md-elevated-card class="md3-card md3-table-card">
     <div class="table-container">
-      <el-table :data="tableData" v-loading="loading" border stripe style="width: 100%">
-        <el-table-column prop="WaveNo" label="波次编号" min-width="150" />
-        <el-table-column prop="CreatorName" label="创建人" width="120" />
-        <el-table-column prop="TotalOrders" label="包含订单数" width="100" align="center" />
-        <el-table-column prop="PickedOrders" label="已拣订单" width="100" align="center" />
-        <el-table-column prop="CreatedTime" label="创建时间" width="180">
-          <template #default="{ row }">{{ formatTime(row.CreatedTime) }}</template>
-        </el-table-column>
-        <el-table-column prop="Status" label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.Status === 'Completed' ? 'success' : 'warning'">
-              {{ row.Status === 'Completed' ? '已完成' : '待拣货' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right" align="center">
-          <template #default="{ row }">
-            <el-button v-if="row.Status !== 'Completed'" type="primary" link size="small" @click="startPicking(row)">
-              开始拣货
-            </el-button>
-            <el-button v-if="row.Status !== 'Completed'" type="success" link size="small" @click="completeWave(row)">
-              完成
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <table class="md3-table" style="width: 100%">
+        <thead>
+          <tr>
+            <th width="150">波次编号</th>
+            <th width="120">创建人</th>
+            <th width="100">包含订单数</th>
+            <th width="100">已拣订单</th>
+            <th width="180">创建时间</th>
+            <th width="100">状态</th>
+            <th width="200">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="loading"><td colspan="7" style="text-align: center">加载中...</td></tr>
+          <tr v-else-if="!tableData.length"><td colspan="7" style="text-align: center">暂无数据</td></tr>
+          <tr v-for="(row, index) in tableData" :key="row.WaveID" :class="index % 2 === 0 ? 'even-row' : 'odd-row'">
+            <td>{{ row.WaveNo }}</td>
+            <td>{{ row.CreatorName }}</td>
+            <td align="center">{{ row.TotalOrders }}</td>
+            <td align="center">{{ row.PickedOrders }}</td>
+            <td>{{ formatTime(row.CreatedTime) }}</td>
+            <td>
+              <span :class="['status-tag', row.Status === 'Completed' ? 'success' : 'warning']">
+                {{ row.Status === 'Completed' ? '已完成' : '待拣货' }}
+              </span>
+            </td>
+            <td align="center">
+              <md-text-button v-if="row.Status !== 'Completed'" class="action-link" @click="startPicking(row)">
+                开始拣货
+              </md-text-button>
+              <md-text-button v-if="row.Status !== 'Completed'" class="action-link success" @click="completeWave(row)">
+                完成
+              </md-text-button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
+        <MdPagination
+          :current-page="currentPage"
           :page-sizes="[10, 20, 50, 100]"
+          :page-size="pageSize"
           :total="total"
-          layout="total, sizes, prev, pager, next, jumper"
           @size-change="fetchWaves"
           @current-change="fetchWaves"
         />
       </div>
     </div>
+    </md-elevated-card>
 
     <!-- 智能推荐弹窗 -->
-    <el-dialog v-model="recommendDialogVisible" title="智能推荐波次" width="800px">
-      <el-alert title="系统已根据出库单包含的物料和库位相似度自动打包了以下波次" type="info" show-icon />
-      <el-table :data="recommendedWaves" style="width: 100%; margin-top: 15px" border>
-        <el-table-column prop="WaveName" label="推荐波次名称" width="180" />
-        <el-table-column label="包含的出库单">
-          <template #default="{ row }">
-            <el-tag v-for="order in row.OutboundOrders" :key="order.OutboundID" style="margin-right: 5px; margin-bottom: 5px;">
-              {{ order.OutboundNo }} (库位: {{ order.LocationsCount }})
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="100">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="createWaveFromRecommend(row)">生成波次</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-dialog>
+    <md-dialog :open="recommendDialogVisible" @closed="recommendDialogVisible = false">
+      <div slot="headline">智能推荐波次</div>
+      <div slot="content">
+        <div class="alert alert-info">
+          系统已根据出库单包含的物料和库位相似度自动打包了以下波次
+        </div>
+        <table class="md3-table" style="width: 100%; margin-top: 15px;">
+          <thead>
+            <tr>
+              <th width="180">推荐波次名称</th>
+              <th>包含的出库单</th>
+              <th width="120">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, index) in recommendedWaves" :key="index">
+              <td>{{ row.WaveName }}</td>
+              <td>
+                <div class="tag-container">
+                  <span class="status-tag info" v-for="order in row.OutboundOrders" :key="order.OutboundID" style="margin-right: 5px; margin-bottom: 5px;">
+                    {{ order.OutboundNo }} (库位: {{ order.LocationsCount }})
+                  </span>
+                </div>
+              </td>
+              <td>
+                <md-text-button @click="createWaveFromRecommend(row)">生成波次</md-text-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div slot="actions">
+        <md-text-button @click="recommendDialogVisible = false">关闭</md-text-button>
+      </div>
+    </md-dialog>
 
     <!-- 拣货作业地图弹窗 -->
-    <el-dialog v-model="pickingDialogVisible" title="波次拣货作业地图 (PDA 模拟视图)" width="900px">
-      <el-alert title="请根据系统规划的 3D/2D 最优路径前往对应库位取货" type="success" show-icon style="margin-bottom: 15px;" />
-      
-      <!-- 引入刚刚编写的可视化组件 -->
-      <PickPathMap :locations="pickLocations" />
-      
-      <el-divider>当前库位拣货任务清单</el-divider>
-      
-      <el-table :data="pickLocations" border stripe height="250">
-        <el-table-column prop="LocationCode" label="目标库位" width="150" />
-        <el-table-column prop="tasks" label="任务明细">
-          <template #default="{ row }">
-            <div v-for="(task, idx) in row.tasks" :key="idx">
-              {{ task.ItemName }} - 需取: <b>{{ task.Quantity }}</b> (订单: {{ task.OutboundNo }})
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="pickingDialogVisible = false">关闭地图</el-button>
-          <el-button type="success" @click="completeWave(currentWave)">已完成本波次拣货</el-button>
-        </span>
-      </template>
-    </el-dialog>
+    <md-dialog :open="pickingDialogVisible" @closed="pickingDialogVisible = false">
+      <div slot="headline">波次拣货作业地图 (PDA 模拟视图)</div>
+      <div slot="content">
+        <div class="alert alert-success" style="margin-bottom: 15px;">
+          请根据系统规划的 3D/2D 最优路径前往对应库位取货
+        </div>
+        
+        <!-- 引入刚刚编写的可视化组件 -->
+        <PickPathMap :locations="pickLocations" />
+        
+        <div class="divider">当前库位拣货任务清单</div>
+        
+        <div style="max-height: 250px; overflow-y: auto;">
+          <table class="md3-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th width="150">目标库位</th>
+                <th>任务明细</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, index) in pickLocations" :key="index" :class="index % 2 === 0 ? 'even-row' : 'odd-row'">
+                <td>{{ row.LocationCode }}</td>
+                <td>
+                  <div v-for="(task, idx) in row.tasks" :key="idx">
+                    {{ task.ItemName }} - 需取: <b>{{ task.Quantity }}</b> (订单: {{ task.OutboundNo }})
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div slot="actions">
+        <md-text-button @click="pickingDialogVisible = false">关闭地图</md-text-button>
+        <md-filled-button @click="completeWave(currentWave)">已完成本波次拣货</md-filled-button>
+      </div>
+    </md-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
 import moment from 'moment';
 import api from '@/api';
 import PickPathMap from '../PickPathMap.vue';
+import { notifyError, notifyInfo, notifySuccess } from '@/utils/notify'
+import MdPagination from '@/components/MdPagination.vue';
 
 const filter = reactive({ status: '' });
 const tableData = ref([]);
@@ -143,7 +203,7 @@ const fetchWaves = async () => {
     tableData.value = res.data.data.items || [];
     total.value = res.data.data.total || 0;
   } catch (error) {
-    ElMessage.error('获取波次列表失败');
+    notifyError('获取波次列表失败');
   } finally {
     loading.value = false;
   }
@@ -157,10 +217,10 @@ const handleRecommend = async () => {
       recommendedWaves.value = res.data.data;
       recommendDialogVisible.value = true;
     } else {
-      ElMessage.info('暂无待出库订单需要推荐');
+      notifyInfo('暂无待出库订单需要推荐');
     }
   } catch (error) {
-    ElMessage.error('获取智能推荐失败');
+    notifyError('推荐波次失败');
   }
 };
 
@@ -173,12 +233,12 @@ const createWaveFromRecommend = async (row) => {
       remark: '来自系统智能推荐'
     });
     if (res.data.code === 200) {
-      ElMessage.success('波次生成成功');
+      notifySuccess('波次生成成功');
       recommendDialogVisible.value = false;
       fetchWaves();
     }
   } catch (error) {
-    ElMessage.error('波次生成失败');
+    notifyError('波次生成失败');
   }
 };
 
@@ -193,7 +253,7 @@ const startPicking = async (row) => {
       pickingDialogVisible.value = true;
     }
   } catch (error) {
-    ElMessage.error('获取拣货路径地图失败');
+    notifyError('获取拣货路径地图失败');
   }
 };
 
@@ -201,16 +261,16 @@ const startPicking = async (row) => {
 const completeWave = async (row) => {
   if (!row) return;
   try {
-    await ElMessageBox.confirm(`确认该波次 [${row.WaveNo}] 的拣货已全部完成吗？`, '提示', { type: 'warning' });
+    if(!window.confirm(`确认该波次 [${row.WaveNo}] 的拣货已全部完成吗？`)) return;
     const res = await api.put(`/api/waves/${row.WaveID}/complete`);
     if (res.data.code === 200) {
-      ElMessage.success('波次拣货已完成');
+      notifySuccess('波次拣货已完成');
       pickingDialogVisible.value = false;
       fetchWaves();
     }
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('操作失败');
+      notifyError('操作失败');
     }
   }
 };
@@ -221,14 +281,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 使用现有的 ERP 样式规范 */
-.filter-card {
-  background: #fff;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
+.md3-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
+
+.md3-card {
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--md-sys-color-surface-container-lowest);
+  padding: 14px;
+}
+
+.md3-table-card {
+  padding: 0;
+}
+
 .filter-row {
   display: flex;
   flex-wrap: wrap;
@@ -241,22 +310,122 @@ onMounted(() => {
 .filter-col label {
   width: 80px;
   text-align: right;
-  color: #606266;
+  color: var(--md-sys-color-on-surface-variant);
   font-size: 14px;
+  font-weight: 700;
 }
 .filter-actions {
   margin-top: 16px;
-  text-align: right;
-}
-.table-container {
-  background: #fff;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
-}
-.pagination-container {
-  margin-top: 16px;
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
+}
+
+.md3-btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.md3-btn-loading md-circular-progress {
+  --md-circular-progress-size: 18px;
+}
+
+.table-container {
+  flex-grow: 1;
+  overflow: auto;
+}
+
+.md3-table {
+  border-collapse: collapse;
+  th {
+    background-color: #f8f9fc;
+    color: #333;
+    font-weight: 600;
+    padding: 12px;
+    border-bottom: 2px solid #e4e7ed;
+    font-size: 14px;
+    text-align: left;
+  }
+  td {
+    padding: 12px;
+    color: #444;
+    font-size: 14px;
+    border-bottom: 1px solid #e4e7ed;
+  }
+  tr:hover {
+    background-color: #f5f7fa;
+  }
+  .even-row {
+    background-color: #fafafa;
+  }
+  .odd-row {
+    background-color: #ffffff;
+  }
+}
+
+.pagination-container {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.status-tag.warning {
+  background-color: #fdf6ec;
+  color: #e6a23c;
+  border: 1px solid #faecd8;
+}
+.status-tag.success {
+  background-color: #f0f9eb;
+  color: #67c23a;
+  border: 1px solid #e1f3d8;
+}
+.status-tag.info {
+  background-color: #f4f4f5;
+  color: #909399;
+  border: 1px solid #e9e9eb;
+}
+
+.action-link {
+  --md-text-button-label-text-size: 14px;
+}
+.action-link.success {
+  --md-text-button-label-text-color: #67c23a;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.alert-info {
+  background-color: #f4f4f5;
+  color: #909399;
+}
+.alert-success {
+  background-color: #f0f9eb;
+  color: #67c23a;
+}
+
+.divider {
+  margin: 24px 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--md-sys-color-primary);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  padding-bottom: 8px;
+}
+
+.tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 </style>

@@ -1,36 +1,41 @@
 <template>
-  <div class="procurement-system" style="width: 100%; height: 100%;">
-    <!-- 头部操作栏 -->
-    <div class="header">
-      <el-button type="default" @click="goBack">返回上一级</el-button>
-      <div class="right-buttons">
-        <el-button type="success" @click="approve">同意</el-button>
-        <el-button type="warning" @click="disagree">不同意</el-button>
-        <el-button type="danger" @click="cancel">撤销</el-button>
-        <el-button type="info" @click="discard">作废</el-button>
-        <el-button type="primary" @click="qualityInspection">质检</el-button>
-        <el-button type="primary" @click="print">打印</el-button>
+  <div class="md3-page">
+    <md-elevated-card class="md3-card md3-card--tight">
+      <div class="header">
+        <md-text-button @click="goBack">
+          <md-icon slot="icon">arrow_back</md-icon>
+          返回上一级
+        </md-text-button>
+        <div class="right-buttons">
+          <md-filled-button @click="approve">同意</md-filled-button>
+          <md-filled-tonal-button @click="disagree">不同意</md-filled-tonal-button>
+          <md-filled-button @click="cancel">撤销</md-filled-button>
+          <md-filled-tonal-button @click="discard">作废</md-filled-tonal-button>
+          <md-filled-tonal-button @click="qualityInspection">质检</md-filled-tonal-button>
+          <md-filled-button @click="print">打印</md-filled-button>
+        </div>
       </div>
-    </div>
+    </md-elevated-card>
 
     <!-- 主体内容区 -->
+    <md-elevated-card class="md3-card">
     <div class="main-content">
       <!-- 基本信息 -->
       <div class="basic-info">
-        <el-row :gutter="10">
-          <el-col :span="8">
+        <div class="info-grid">
+          <div class="info-col">
             <div class="info-item"><strong>单号：</strong>{{ orderInfo.orderNo }}</div>
             <div class="info-item"><strong>创建人：</strong>{{ orderInfo.creator }}</div>
             <div class="info-item"><strong>来源单号：</strong>{{ orderInfo.sourceNo }}</div>
             <div class="info-item"><strong>创建时间：</strong>{{ orderInfo.createTime }}</div>
-          </el-col>
-          <el-col :span="8">
+          </div>
+          <div class="info-col">
             <div class="info-item"><strong>入库仓库：</strong>{{ orderInfo.warehouse }}</div>
             <div class="info-item"><strong>入库类型：</strong>{{ orderInfo.type }}</div>
             <div class="info-item"><strong>入库方式：</strong>{{ orderInfo.mode }}</div>
             <div class="info-item"><strong>状态：</strong><span class="status-tag">{{ orderInfo.status }}</span></div>
-          </el-col>
-          <el-col :span="8">
+          </div>
+          <div class="info-col">
             <div class="timeline">
               <div class="timeline-item" v-for="(step, index) in processSteps" :key="index">
                 <div class="timeline-dot"></div>
@@ -42,34 +47,55 @@
                 </div>
               </div>
             </div>
-          </el-col>
-        </el-row>
+          </div>
+        </div>
       </div>
 
       <!-- 商品信息表格 -->
       <div class="goods-table">
-        <el-table :data="goodsData" border style="width: 100%;">
-          <el-table-column prop="index" label="序号" width="60"></el-table-column>
-          <el-table-column prop="materialNo" label="原料编号"></el-table-column>
-          <el-table-column prop="materialName" label="原料名称"></el-table-column>
-          <el-table-column prop="specification" label="规格型号"></el-table-column>
-          <el-table-column prop="unit" label="单位"></el-table-column>
-          <el-table-column prop="batchNo" label="批次号"></el-table-column>
-          <el-table-column prop="receivableQty" label="应收数量"></el-table-column>
-          <el-table-column prop="receivableWeight" label="应收净重"></el-table-column>
-          <el-table-column prop="receivedQty" label="实收数量"></el-table-column>
-          <el-table-column prop="receivedGrossWeight" label="实收毛重"></el-table-column>
-          <el-table-column prop="receivedNetWeight" label="实收净重"></el-table-column>
-          <el-table-column prop="remark" label="备注"></el-table-column>
-        </el-table>
+        <table class="md3-table" style="width: 100%">
+          <thead>
+            <tr>
+              <th width="60">序号</th>
+              <th>原料编号</th>
+              <th>原料名称</th>
+              <th>规格型号</th>
+              <th>单位</th>
+              <th>批次号</th>
+              <th>应收数量</th>
+              <th>应收净重</th>
+              <th>实收数量</th>
+              <th>实收毛重</th>
+              <th>实收净重</th>
+              <th>备注</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, index) in goodsData" :key="index">
+              <td align="center">{{ row.index }}</td>
+              <td>{{ row.materialNo }}</td>
+              <td>{{ row.materialName }}</td>
+              <td>{{ row.specification }}</td>
+              <td>{{ row.unit }}</td>
+              <td>{{ row.batchNo }}</td>
+              <td align="right">{{ row.receivableQty }}</td>
+              <td align="right">{{ row.receivableWeight }}</td>
+              <td align="right">{{ row.receivedQty }}</td>
+              <td align="right">{{ row.receivedGrossWeight }}</td>
+              <td align="right">{{ row.receivedNetWeight }}</td>
+              <td>{{ row.remark }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
+    </md-elevated-card>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { notifySuccess } from '@/utils/notify'
 import {useCounterStore} from '@/stores/counter'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -115,54 +141,57 @@ const goodsData = ref([
 
 // 操作方法
 const approve = () => {
-  ElMessage.success('操作成功')
+  notifySuccess('操作成功')
   // 实际业务逻辑
 }
 
 const disagree = () => {
-  ElMessage.warning('操作成功')
+  notifySuccess('操作成功')
 }
 
 const cancel = () => {
-  ElMessage.info('操作成功')
+  notifySuccess('操作成功')
 }
 
 const discard = () => {
-  ElMessage.error('操作成功')
+  notifySuccess('操作成功')
 }
 
 const qualityInspection = () => {
-  ElMessage.info('质检功能')
+  notifySuccess('质检功能')
 }
 
 const print = () => {
-  ElMessage.info('打印功能')
+  notifySuccess('打印功能')
 }
 
 const router = useRouter()
 
 const goBack = () => {
-  // counter.currentView = 'RawMaterial'
-  // 这里可添加实际的返回逻辑，例如路由返回
   router.back()
-  //router.push({ name:'InStorageRawMaterial' })
-  // 或者使用 Vue Router 的导航守卫
-  ElMessage.info('返回上一级')
+  notifySuccess('返回上一级')
 }
 </script>
 
 <style scoped lang="scss">
-.procurement-system {
+.md3-page {
   display: flex;
   flex-direction: column;
+  gap: 12px;
   height: 100vh;
-  font-family: 'Microsoft YaHei';
+}
+
+.md3-card {
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.md3-card--tight {
+  padding: 12px 14px;
 }
 
 .header {
-  padding: 15px 20px;
-  background-color: #f0f9ff;
-  border-bottom: 1px solid #e6f7ff;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -183,10 +212,15 @@ const goBack = () => {
 
 .basic-info {
   padding: 20px;
-  background-color: #f6faff;
-  border: 1px solid #e6f7ff;
+  background-color: var(--md-sys-color-surface-container-lowest);
   border-radius: 8px;
   margin-bottom: 20px;
+  
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
 
   .info-item {
     margin-bottom: 10px;
@@ -195,7 +229,6 @@ const goBack = () => {
   }
 
   .timeline {
-    margin-top: 20px;
     position: relative;
     padding-left: 20px;
 
@@ -251,9 +284,30 @@ const goBack = () => {
 }
 
 .goods-table {
-  border: 1px solid #e6f7ff;
   border-radius: 8px;
   overflow: hidden;
+}
+
+.md3-table {
+  border-collapse: collapse;
+  th {
+    background-color: #f8f9fc;
+    color: #333;
+    font-weight: 600;
+    padding: 12px;
+    border-bottom: 2px solid #e4e7ed;
+    font-size: 14px;
+    text-align: left;
+  }
+  td {
+    padding: 12px;
+    color: #444;
+    font-size: 14px;
+    border-bottom: 1px solid #e4e7ed;
+  }
+  tr:hover {
+    background-color: #f5f7fa;
+  }
 }
 
 .status-tag {
@@ -265,22 +319,15 @@ const goBack = () => {
   font-size: 12px;
 }
 
-.el-button {
-  font-size: 14px;
-  padding: 8px 15px; /* 适当减小按钮内边距 */
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  &:hover {
-    transform: translateY(-2px);
-  }
-}
-
 /* 响应式布局 */
 @media (max-width: 600px) {
   .right-buttons {
     flex-direction: column;
     align-items: flex-start;
     margin-top: 10px;
+  }
+  .info-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 </style>    

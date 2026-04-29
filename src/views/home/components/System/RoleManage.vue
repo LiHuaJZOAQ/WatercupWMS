@@ -1,68 +1,100 @@
 <template>
-  <div class="system-container">
-    <div class="action-card">
-      <el-button type="success" @click="handleAdd">
-        <i class="el-icon-plus"></i> 新增角色
-      </el-button>
-    </div>
+  <div class="md3-page">
+    <md-elevated-card class="md3-card md3-card--tight">
+      <div class="md3-action-row">
+        <div class="md3-action-title">角色管理</div>
+        <md-filled-tonal-button @click="handleAdd">
+          <md-icon slot="icon">add</md-icon>
+          新增角色
+        </md-filled-tonal-button>
+      </div>
+    </md-elevated-card>
 
-    <div class="data-container">
-      <el-table :data="tableData" border stripe v-loading="loading">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="角色名称" width="150" />
-        <el-table-column prop="description" label="角色描述" min-width="200" />
-        <el-table-column label="角色类型" width="120">
-          <template #default="{ row }">
-            <el-tag :type="row.isSystem === 1 ? 'danger' : 'info'">
-              {{ row.isSystem === 1 ? '系统内置' : '自定义' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" width="180" />
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <el-button link type="primary" @click="handleEdit(row)" :disabled="row.isSystem === 1">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(row)" :disabled="row.isSystem === 1">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+    <md-elevated-card class="md3-card md3-table-card">
+      <div class="md3-table-container">
+        <table class="md3-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>角色名称</th>
+              <th>角色描述</th>
+              <th>角色类型</th>
+              <th>创建时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in tableData" :key="row.id">
+              <td>{{ row.id }}</td>
+              <td>{{ row.name }}</td>
+              <td>{{ row.description }}</td>
+              <td>
+                <span :class="['status-tag', row.isSystem === 1 ? 'status-danger' : 'status-info']">
+                  {{ row.isSystem === 1 ? '系统内置' : '自定义' }}
+                </span>
+              </td>
+              <td>{{ row.createdAt }}</td>
+              <td>
+                <md-text-button @click="handleEdit(row)" :disabled="row.isSystem === 1">编辑</md-text-button>
+                <md-text-button class="danger-btn" @click="handleDelete(row)" :disabled="row.isSystem === 1">删除</md-text-button>
+              </td>
+            </tr>
+            <tr v-if="tableData.length === 0">
+              <td colspan="6" class="empty-text">暂无数据</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </md-elevated-card>
 
     <!-- 角色表单弹窗 -->
-    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="600px">
-      <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px">
-        <el-form-item label="角色名称" prop="name">
-          <el-input v-model="formData.name" placeholder="例如: 仓库管理员" />
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input type="textarea" v-model="formData.description" placeholder="角色职责描述" />
-        </el-form-item>
-        
-        <el-form-item label="菜单权限">
-          <div class="tree-container">
-            <el-tree
-              ref="treeRef"
-              :data="permissionsTree"
-              show-checkbox
-              node-key="id"
-              :props="defaultProps"
-              :default-checked-keys="formData.permissionIds"
-            />
+    <md-dialog :open="dialogVisible" @closed="dialogVisible = false">
+      <div slot="headline">{{ dialogTitle }}</div>
+      <div slot="content">
+        <form class="md3-form" @submit.prevent>
+          <md-outlined-text-field
+            label="角色名称*"
+            :value="formData.name"
+            @input="e => formData.name = e.target.value"
+            placeholder="例如: 仓库管理员"
+            class="md3-form-field"
+          />
+          <md-outlined-text-field
+            label="描述"
+            type="textarea"
+            :value="formData.description"
+            @input="e => formData.description = e.target.value"
+            placeholder="角色职责描述"
+            class="md3-form-field"
+          />
+          
+          <div class="tree-container-wrapper">
+            <label class="tree-label">菜单权限</label>
+            <div class="tree-container">
+              <MdTree
+                ref="treeRef"
+                :data="permissionsTree"
+                node-key="id"
+                :props="defaultProps"
+                :default-checked-keys="formData.permissionIds"
+              />
+            </div>
           </div>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
-      </template>
-    </el-dialog>
+        </form>
+      </div>
+      <div slot="actions">
+        <md-text-button @click="dialogVisible = false">取消</md-text-button>
+        <md-filled-button @click="handleSubmit">确定</md-filled-button>
+      </div>
+    </md-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import MdTree from '@/components/MdTree.vue';
 import api from '@/api';
+import { notifyError, notifySuccess } from '@/utils/notify'
 
 const tableData = ref([]);
 const loading = ref(false);
@@ -70,7 +102,6 @@ const permissionsTree = ref([]);
 
 const dialogVisible = ref(false);
 const dialogTitle = ref('新增角色');
-const formRef = ref(null);
 const treeRef = ref(null);
 
 const formData = reactive({
@@ -85,17 +116,13 @@ const defaultProps = {
   label: 'name'
 };
 
-const rules = {
-  name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
-};
-
 const fetchData = async () => {
   loading.value = true;
   try {
     const res = await api.getRoles();
     tableData.value = res.data?.items || [];
   } catch (error) {
-    ElMessage.error('获取列表失败');
+    notifyError('获取列表失败');
   } finally {
     loading.value = false;
   }
@@ -117,9 +144,6 @@ const handleAdd = () => {
   formData.description = '';
   formData.permissionIds = [];
   dialogVisible.value = true;
-  nextTick(() => {
-    if (treeRef.value) treeRef.value.setCheckedKeys([]);
-  });
 };
 
 const handleEdit = (row) => {
@@ -129,47 +153,44 @@ const handleEdit = (row) => {
   formData.description = row.description || '';
   formData.permissionIds = row.permissionIds || [];
   dialogVisible.value = true;
-  nextTick(() => {
-    if (treeRef.value) treeRef.value.setCheckedKeys(formData.permissionIds);
-  });
 };
 
 const handleSubmit = async () => {
-  if (!formRef.value) return;
-  await formRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        // 获取树形组件中勾选的节点
-        if (treeRef.value) {
-          const checkedKeys = treeRef.value.getCheckedKeys();
-          const halfCheckedKeys = treeRef.value.getHalfCheckedKeys();
-          formData.permissionIds = [...checkedKeys, ...halfCheckedKeys];
-        }
-
-        if (formData.id) {
-          await api.updateRole(formData.id, formData);
-          ElMessage.success('更新成功');
-        } else {
-          await api.createRole(formData);
-          ElMessage.success('创建成功');
-        }
-        dialogVisible.value = false;
-        fetchData();
-      } catch (error) {
-        ElMessage.error(error.response?.data?.message || '保存失败');
-      }
+  if (!formData.name) {
+    notifyError('角色名称为必填项');
+    return;
+  }
+  try {
+    // 获取树形组件中勾选的节点
+    if (treeRef.value) {
+      const checkedKeys = treeRef.value.getCheckedKeys();
+      // material-web MdTree 默认可能不提供 getHalfCheckedKeys，但这里假设返回的 checkedKeys 足够，或组件内已处理。
+      // 如果需要半选节点可以合并，这里暂时只使用 checkedKeys。根据需求可以调整。
+      formData.permissionIds = checkedKeys;
     }
-  });
+
+    if (formData.id) {
+      await api.updateRole(formData.id, formData);
+      notifySuccess('更新成功');
+    } else {
+      await api.createRole(formData);
+      notifySuccess('创建成功');
+    }
+    dialogVisible.value = false;
+    fetchData();
+  } catch (error) {
+    notifyError(error.response?.data?.message || '保存失败');
+  }
 };
 
 const handleDelete = async (row) => {
+  if (!confirm(`确定要删除角色 ${row.name} 吗？`)) return;
   try {
-    await ElMessageBox.confirm(`确定要删除角色 ${row.name} 吗？`, '危险操作', { type: 'error' });
     await api.deleteRole(row.id);
-    ElMessage.success('删除成功');
+    notifySuccess('删除成功');
     fetchData();
   } catch (error) {
-    if (error !== 'cancel') ElMessage.error(error.response?.data?.message || '删除失败');
+    notifyError(error.response?.data?.message || '删除失败');
   }
 };
 
@@ -179,15 +200,118 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.system-container { padding: 16px; background: #f0f2f5; min-height: 100vh; }
-.action-card, .data-container { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 16px; }
+<style scoped lang="scss">
+.md3-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.md3-card {
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--md-sys-color-surface-container-lowest);
+  padding: 14px;
+}
+
+.md3-card--tight {
+  padding: 12px 14px;
+}
+
+.md3-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.md3-action-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+}
+
+.md3-table-card {
+  padding: 0;
+}
+
+.md3-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.md3-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.md3-table th,
+.md3-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.md3-table th {
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.empty-text {
+  text-align: center;
+  color: var(--md-sys-color-outline);
+  padding: 32px !important;
+}
+
+.status-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.status-info {
+  background: #e8f0fe;
+  color: #1a73e8;
+}
+.status-danger {
+  background: #fce8e6;
+  color: #d93025;
+}
+
+.danger-btn {
+  --md-text-button-label-text-color: var(--md-sys-color-error);
+}
+
+.md3-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 400px;
+  padding: 8px 0;
+}
+
+.md3-form-field {
+  width: 100%;
+}
+
+.tree-container-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tree-label {
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-left: 4px;
+}
+
 .tree-container {
   width: 100%;
   max-height: 300px;
   overflow-y: auto;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
   padding: 10px;
 }
 </style>

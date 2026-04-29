@@ -1,396 +1,385 @@
 <template>
-  <div class="erp-container">
+  <div class="md3-page">
     <!-- 筛选卡片 -->
-    <el-card shadow="never" class="filter-card">
-      <el-form :inline="true" :model="searchForm" class="filter-row">
+    <md-elevated-card class="md3-card">
+    <div class="filter-card">
+      <form class="filter-row" @submit.prevent="handleSearch">
         <div class="filter-col">
           <label>库位编号</label>
-          <el-input
-            v-model="searchForm.locationCode"
+          <md-outlined-text-field
+            :value="searchForm.locationCode"
+            @input="searchForm.locationCode = $event.target.value"
             placeholder="请输入库位编号"
-            clearable
-            @clear="clearSearch"
           />
         </div>
         <div class="filter-col">
           <label>库位名称</label>
-          <el-input
-            v-model="searchForm.locationName"
+          <md-outlined-text-field
+            :value="searchForm.locationName"
+            @input="searchForm.locationName = $event.target.value"
             placeholder="请输入库位名称"
-            clearable
           />
         </div>
         <div class="filter-col">
           <label>所属仓库</label>
-          <el-select v-model="searchForm.warehouseId" placeholder="全部仓库" clearable>
-            <el-option
+          <md-outlined-select :value="searchForm.warehouseId" @change="searchForm.warehouseId = $event.target.value" placeholder="全部仓库">
+            <md-select-option
               v-for="warehouse in warehouseOptions"
               :key="warehouse.value"
-              :label="warehouse.label"
               :value="warehouse.value"
-            />
-          </el-select>
+            >
+              <div slot="headline">{{warehouse.label}}</div>
+            </md-select-option>
+          </md-outlined-select>
         </div>
         <div class="filter-col">
           <label>库位类型</label>
-          <el-select v-model="searchForm.locationType" placeholder="全部类型" clearable>
-            <el-option
+          <md-outlined-select :value="searchForm.locationType" @change="searchForm.locationType = $event.target.value" placeholder="全部类型">
+            <md-select-option
               v-for="type in locationTypeOptions"
               :key="type.value"
-              :label="type.label"
               :value="type.value"
-            />
-          </el-select>
+            >
+              <div slot="headline">{{type.label}}</div>
+            </md-select-option>
+          </md-outlined-select>
         </div>
         <div class="filter-col">
           <label>使用状态</label>
-          <el-select v-model="searchForm.occupancyStatus" placeholder="全部状态" clearable>
-            <el-option
+          <md-outlined-select :value="searchForm.occupancyStatus" @change="searchForm.occupancyStatus = $event.target.value" placeholder="全部状态">
+            <md-select-option
               v-for="status in occupancyStatusOptions"
               :key="status.value"
-              :label="status.label"
               :value="status.value"
-            />
-          </el-select>
+            >
+              <div slot="headline">{{status.label}}</div>
+            </md-select-option>
+          </md-outlined-select>
         </div>
         <div class="filter-actions">
-          <el-button class="btn-reset" @click="resetSearch">重置</el-button>
-          <el-button type="primary" class="btn-primary" @click="handleSearch">查询</el-button>
+          <md-text-button @click.prevent="resetSearch">重置</md-text-button>
+          <md-filled-button @click.prevent="handleSearch">查询</md-filled-button>
         </div>
-      </el-form>
-    </el-card>
+      </form>
+    </div>
+    </md-elevated-card>
 
     <!-- 操作栏 -->
-    <div class="action-bar">
-      <el-button type="primary" class="action-btn" @click="handleAdd">
-        <i class="el-icon-plus"></i>新增库位
-      </el-button>
-      <el-button 
-        type="danger" 
-        class="action-btn" 
-        :disabled="!selectedRows.length" 
-        @click="handleBatchDelete"
-      >
-        <i class="el-icon-delete"></i>批量删除
-      </el-button>
-      <el-button class="action-btn" @click="handleExport" style="display: none;">
-        <i class="el-icon-download"></i>导出数据
-      </el-button>
-      <el-button class="action-btn" @click="handleLocationMap" style="display: none;">
-        <i class="el-icon-location-outline"></i>库位地图
-      </el-button>
-    </div>
+    <md-elevated-card class="md3-card md3-card--tight">
+      <div class="action-bar md3-action-bar">
+        <div class="md3-action-title">仓库库位</div>
+        <div class="action-buttons">
+          <md-filled-tonal-button @click="handleAdd">
+            <md-icon slot="icon">add</md-icon>
+            新增库位
+          </md-filled-tonal-button>
+          <md-filled-button :disabled="!selectedRows.length" @click="handleBatchDelete">
+            <md-icon slot="icon">delete</md-icon>
+            批量删除
+          </md-filled-button>
+        </div>
+      </div>
+    </md-elevated-card>
 
     <!-- 数据表格 -->
+    <md-elevated-card class="md3-card md3-table-card">
     <div class="data-container">
-      <div class="table-container">        <el-table
-          v-loading="loading"
-          :data="tableData"
-          border
-          stripe
-          height="calc(100vh - 300px)"
-          style="width: 100%"
-          header-fixed
-          @selection-change="handleSelectionChange"
-          @row-click="handleRowClick"
-        >
-          <el-table-column type="selection" width="55" />
-          <el-table-column prop="locationCode" label="库位编号" width="140" sortable>
-            <template #default="{ row }">
-              <el-link type="primary" @click="handleLocationDetail(row)">
-                {{ row.locationCode }}
-              </el-link>
-            </template>
-          </el-table-column>
-          <el-table-column prop="locationName" label="库位名称" width="160" show-overflow-tooltip />
-          <el-table-column prop="warehouseName" label="所属仓库" width="120" />
-          <el-table-column label="位置信息" width="200">
-            <template #default="{ row }">
-              <span class="location-position">
-                {{ formatLocationPosition(row) }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="locationType" label="库位类型" width="100" align="center">
-            <template #default="{ row }">
-              <el-tag :type="getLocationTypeTagType(row.locationType)" size="small">
-                {{ getLocationTypeText(row.locationType) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="容量信息" width="160">
-            <template #default="{ row }">
-              <div class="capacity-info">
-                <div class="capacity-bar">
-                  <el-progress 
-                    :percentage="getOccupancyPercentage(row)" 
-                    :color="getOccupancyColor(row)"
-                    :stroke-width="19"
-                    text-inside
-                  />
+      <div class="table-container" style="padding: 16px; overflow-x: auto;">
+        <table class="md3-table" style="width: 100%;">
+          <thead>
+            <tr>
+              <th><md-checkbox @change="toggleAll" :checked="selectedRows.length === tableData.length && tableData.length > 0"></md-checkbox></th>
+              <th>库位编号</th>
+              <th>库位名称</th>
+              <th>所属仓库</th>
+              <th>位置信息</th>
+              <th>库位类型</th>
+              <th>容量信息</th>
+              <th>存储通用</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="loading">
+              <td colspan="10" style="text-align: center; padding: 20px;">加载中...</td>
+            </tr>
+            <tr v-else-if="tableData.length === 0">
+              <td colspan="10" style="text-align: center; padding: 20px;">暂无数据</td>
+            </tr>
+            <tr v-else v-for="row in tableData" :key="row.locationCode" @click="handleRowClick(row)">
+              <td>
+                <md-checkbox 
+                  :checked="selectedRows.includes(row)" 
+                  @change="toggleSelection(row, $event)"
+                ></md-checkbox>
+              </td>
+              <td>
+                <a href="#" @click.prevent="handleLocationDetail(row)" style="color: var(--md-sys-color-primary); text-decoration: none;">
+                  {{ row.locationCode }}
+                </a>
+              </td>
+              <td>{{ row.locationName }}</td>
+              <td>{{ row.warehouseName }}</td>
+              <td>
+                <span class="location-position">
+                  {{ formatLocationPosition(row) }}
+                </span>
+              </td>
+              <td style="text-align: center;">
+                <span :class="['status-tag', 'status-' + getLocationTypeTagType(row.locationType)]">
+                  {{ getLocationTypeText(row.locationType) }}
+                </span>
+              </td>
+              <td>
+                <div class="capacity-info">
+                  <div class="capacity-bar" style="background: #e5e7eb; border-radius: 10px; height: 16px; overflow: hidden; position: relative;">
+                    <div :style="{ width: getOccupancyPercentage(row) + '%', background: getOccupancyColor(row), height: '100%' }"></div>
+                    <span style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 10px; color: #fff; text-shadow: 0 0 2px rgba(0,0,0,0.5);">{{ getOccupancyPercentage(row) }}%</span>
+                  </div>
+                  <div class="capacity-text">
+                    {{ row.currentOccupancy || 0 }} / {{ row.capacity || 0 }}
+                  </div>
                 </div>
-                <div class="capacity-text">
-                  {{ row.currentOccupancy || 0 }} / {{ row.capacity || 0 }}
+              </td>
+              <td>
+                <div v-if="row.materialInfo && row.materialInfo.length > 0">
+                  <div 
+                    v-for="(material, index) in row.materialInfo.slice(0, 2)" 
+                    :key="index"
+                    class="material-item"
+                  >
+                    <span class="status-tag material-tag">{{ material.materialName }}</span>
+                    <span class="material-quantity">{{ material.quantity }}{{ material.unit }}</span>
+                  </div>
+                  <a v-if="row.materialInfo.length > 2" href="#" @click.prevent="showMoreMaterials(row)" style="color: var(--md-sys-color-primary); font-size: 12px; text-decoration: none;">
+                    +{{ row.materialInfo.length - 2 }}种通用
+                  </a>
                 </div>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="materialInfo" label="存储通用" width="200">
-            <template #default="{ row }">
-              <div v-if="row.materialInfo && row.materialInfo.length > 0">
-                <div 
-                  v-for="(material, index) in row.materialInfo.slice(0, 2)" 
-                  :key="index"
-                  class="material-item"
-                >
-                  <el-tag size="small" class="material-tag">
-                    {{ material.materialName }}
-                  </el-tag>
-                  <span class="material-quantity">{{ material.quantity }}{{ material.unit }}</span>
-                </div>
-                <el-link 
-                  v-if="row.materialInfo.length > 2" 
-                  type="primary" 
-                  size="small"
-                  @click="showMoreMaterials(row)"
-                >
-                  +{{ row.materialInfo.length - 2 }}种通用
-                </el-link>
-              </div>
-              <span v-else class="empty-location">空库位</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="status" label="状态" width="130" align="center">
-            <template #default="{ row }">
-              <el-switch
-                v-model="row.status"
-                :active-value="1"
-                :inactive-value="0"
-                active-text="启用"
-                inactive-text="禁用"
-                @change="handleStatusChange(row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right" align="center">
-            <template #default="{ row }">
-              <el-button size="small"<el-button link type="primary" @click="handlePrint(row)">
-              <el-icon><Printer /></el-icon>
-            </el-button>
-            <el-button link type="primary" @click="handleEdit(row)">
-              编辑
-            </el-button>
-              <el-button size="small" link type="info" @click="handleLocationDetail(row)">
-                详情
-              </el-button>
-              <el-button size="small" link type="success" @click="handleInventoryManage(row)" style="display: none;">
-                库存
-              </el-button>
-              <el-button size="small" link type="danger" @click="handleDelete(row)">
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+                <span v-else class="empty-location">空库位</span>
+              </td>
+              <td style="text-align: center;">
+                <label style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                  <md-switch :selected="row.status === 1" @change="handleStatusChange(row, $event.target.selected)"></md-switch>
+                  <span style="font-size: 12px;">{{ row.status === 1 ? '启用' : '禁用' }}</span>
+                </label>
+              </td>
+              <td style="text-align: center; white-space: nowrap;">
+                <md-text-button @click.stop="handlePrint(row)"><md-icon slot="icon">print</md-icon></md-text-button>
+                <md-text-button @click.stop="handleEdit(row)">编辑</md-text-button>
+                <md-text-button @click.stop="handleLocationDetail(row)">详情</md-text-button>
+                <md-text-button @click.stop="handleDelete(row)" style="--md-sys-color-primary: var(--md-sys-color-error);">删除</md-text-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       
       <!-- 分页 -->
       <div class="pagination-container">
-        <el-pagination
-          background
-          layout="total, sizes, prev, pager, next, jumper"
+        <MdPagination
           :current-page="pagination.currentPage"
           :page-size="pagination.pageSize"
-          :page-sizes="[5,10, 20, 50, 100]"
           :total="pagination.total"
-          @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
       </div>
     </div>
+    </md-elevated-card>
 
     <!-- 新增/编辑库位对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="800px"
-      :close-on-click-modal="false"
-      destroy-on-close
-    >
-      <el-form
-        ref="formRef"
-        :model="formData"
-        :rules="formRules"
-        label-width="120px"
-      >
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="库位编号" prop="locationCode">
-              <el-input 
-                v-model="formData.locationCode" 
+    <md-dialog :open="dialogVisible" @closed="dialogVisible = false">
+      <div slot="headline">{{ dialogTitle }}</div>
+      <div slot="content" style="padding-top: 8px; width: 600px; display: flex; flex-direction: column; gap: 16px;">
+        <form id="formRef" @submit.prevent="submitForm">
+          <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">库位编号</label>
+              <md-outlined-text-field 
+                :value="formData.locationCode" 
+                @input="formData.locationCode = $event.target.value"
                 placeholder="请输入库位编号"
                 :disabled="isEdit"
+                style="width: 100%"
               />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="库位名称" prop="locationName">
-              <el-input v-model="formData.locationName" placeholder="请输入库位名称" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="所属仓库" prop="warehouseId">
-              <el-select v-model="formData.warehouseId" placeholder="请选择仓库" style="width: 100%">
-                <el-option
+            </div>
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">库位名称</label>
+              <md-outlined-text-field 
+                :value="formData.locationName" 
+                @input="formData.locationName = $event.target.value"
+                placeholder="请输入库位名称" 
+                style="width: 100%"
+              />
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">所属仓库</label>
+              <md-outlined-select :value="formData.warehouseId" @change="formData.warehouseId = $event.target.value" style="width: 100%">
+                <md-select-option
                   v-for="warehouse in warehouseOptions"
                   :key="warehouse.value"
-                  :label="warehouse.label"
                   :value="warehouse.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="库位类型" prop="locationType">
-              <el-select v-model="formData.locationType" placeholder="请选择类型" style="width: 100%">
-                <el-option
+                >
+                  <div slot="headline">{{warehouse.label}}</div>
+                </md-select-option>
+              </md-outlined-select>
+            </div>
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">库位类型</label>
+              <md-outlined-select :value="formData.locationType" @change="formData.locationType = $event.target.value" style="width: 100%">
+                <md-select-option
                   v-for="type in locationTypeOptions"
                   :key="type.value"
-                  :label="type.label"
                   :value="type.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
+                >
+                  <div slot="headline">{{type.label}}</div>
+                </md-select-option>
+              </md-outlined-select>
+            </div>
+          </div>
 
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="区域" prop="zone">
-              <el-input v-model="formData.zone" placeholder="如：A区" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="排" prop="row">
-              <el-input v-model="formData.row" placeholder="如：01排" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="列" prop="col">
-              <el-input v-model="formData.col" placeholder="如：01列" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="层" prop="level">
-              <el-input v-model="formData.level" placeholder="如：01层" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+          <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">区域</label>
+              <md-outlined-text-field :value="formData.zone" @input="formData.zone = $event.target.value" placeholder="如：A区" style="width: 100%" />
+            </div>
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">排</label>
+              <md-outlined-text-field :value="formData.row" @input="formData.row = $event.target.value" placeholder="如：01排" style="width: 100%" />
+            </div>
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">列</label>
+              <md-outlined-text-field :value="formData.col" @input="formData.col = $event.target.value" placeholder="如：01列" style="width: 100%" />
+            </div>
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">层</label>
+              <md-outlined-text-field :value="formData.level" @input="formData.level = $event.target.value" placeholder="如：01层" style="width: 100%" />
+            </div>
+          </div>
 
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="容量" prop="capacity">
-              <el-input-number
-                v-model="formData.capacity"
-                :min="0"
-                :precision="2"
-                controls-position="right"
-                style="width: 100%"
+          <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">容量</label>
+              <md-outlined-text-field
+                type="number"
+                :value="formData.capacity"
+                @input="formData.capacity = $event.target.value"
                 placeholder="库位最大容量"
+                style="width: 100%"
               />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="状态">
-              <el-radio-group v-model="formData.status">
-                <el-radio :label="1">启用</el-radio>
-                <el-radio :label="0">禁用</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm" :loading="submitLoading">
-          确定
-        </el-button>
-      </template>
-    </el-dialog>
+            </div>
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">状态</label>
+              <div style="display: flex; gap: 16px;">
+                <label style="display: flex; align-items: center; gap: 4px;">
+                  <md-radio name="loc_status" value="1" :checked="formData.status == 1" @change="formData.status = 1"></md-radio>启用
+                </label>
+                <label style="display: flex; align-items: center; gap: 4px;">
+                  <md-radio name="loc_status" value="0" :checked="formData.status == 0" @change="formData.status = 0"></md-radio>禁用
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div slot="actions">
+        <md-text-button @click="dialogVisible = false">取消</md-text-button>
+        <md-filled-button @click="submitForm" :disabled="submitLoading">确定</md-filled-button>
+      </div>
+    </md-dialog>
 
     <!-- 库位详情对话框 -->
-    <el-dialog
-      v-model="detailDialogVisible"
-      title="库位详情"
-      width="1000px"
-      destroy-on-close
-    >
-      <div v-if="locationDetail" class="location-detail">
-        <el-descriptions :column="3" border>
-          <el-descriptions-item label="库位编号">{{ locationDetail.data.locationCode }}</el-descriptions-item>
-          <el-descriptions-item label="库位名称">{{ locationDetail.data.locationName }}</el-descriptions-item>
-          <el-descriptions-item label="所属仓库">{{ locationDetail.data.warehouseName }}</el-descriptions-item>
-          <el-descriptions-item label="位置信息">
-            {{ formatLocationPosition(locationDetail.data) }}
-          </el-descriptions-item>
-          <el-descriptions-item label="库位类型">
-            <el-tag :type="getLocationTypeTagType(locationDetail.data.locationType)">
-              {{ getLocationTypeText(locationDetail.data.locationType) }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="容量利用率">
-            <el-progress 
-              :percentage="getOccupancyPercentage(locationDetail.data)" 
-              :color="getOccupancyColor(locationDetail.data)"
-            />
-          </el-descriptions-item>
-        </el-descriptions>
+    <md-dialog :open="detailDialogVisible" @closed="detailDialogVisible = false">
+      <div slot="headline">库位详情</div>
+      <div slot="content" style="padding-top: 8px; width: 800px;">
+        <div v-if="locationDetail" class="location-detail">
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; background: #f9fafb; padding: 16px; border-radius: 8px;">
+            <div><strong style="color: #666;">库位编号:</strong> {{ locationDetail.data.locationCode }}</div>
+            <div><strong style="color: #666;">库位名称:</strong> {{ locationDetail.data.locationName }}</div>
+            <div><strong style="color: #666;">所属仓库:</strong> {{ locationDetail.data.warehouseName }}</div>
+            <div><strong style="color: #666;">位置信息:</strong> {{ formatLocationPosition(locationDetail.data) }}</div>
+            <div>
+              <strong style="color: #666;">库位类型:</strong> 
+              <span :class="['status-tag', 'status-' + getLocationTypeTagType(locationDetail.data.locationType)]">
+                {{ getLocationTypeText(locationDetail.data.locationType) }}
+              </span>
+            </div>
+            <div>
+              <strong style="color: #666;">容量利用率:</strong> 
+              <div style="display: inline-block; width: 100px; height: 12px; background: #e5e7eb; border-radius: 6px; overflow: hidden; vertical-align: middle; margin-left: 8px;">
+                <div :style="{ width: getOccupancyPercentage(locationDetail.data) + '%', background: getOccupancyColor(locationDetail.data), height: '100%' }"></div>
+              </div>
+            </div>
+          </div>
 
-        <el-divider content-position="left">库存明细</el-divider>
-        
-        <el-table :data="locationDetail.data.inventoryDetails" border stripe>
-          <el-table-column prop="materialCode" label="通用编码" width="120" />
-          <el-table-column prop="materialName" label="通用名称" width="150" />
-          <el-table-column prop="specification" label="规格" show-overflow-tooltip />
-          <el-table-column prop="batchNumber" label="批次号" width="120" />
-          <el-table-column label="库存数量" width="120" align="right">
-            <template #default="{ row }">
-              {{ row.currentQuantity }}{{ row.unit }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="lastInboundDate" label="最后入库时间" width="160" />
-        </el-table>
+          <div style="margin: 20px 0 10px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px;">库存明细</div>
+          
+          <table class="md3-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th>通用编码</th>
+                <th>通用名称</th>
+                <th>规格</th>
+                <th>批次号</th>
+                <th style="text-align: right;">库存数量</th>
+                <th>最后入库时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in locationDetail.data.inventoryDetails" :key="row.materialCode">
+                <td>{{ row.materialCode }}</td>
+                <td>{{ row.materialName }}</td>
+                <td>{{ row.specification }}</td>
+                <td>{{ row.batchNumber }}</td>
+                <td style="text-align: right;">{{ row.currentQuantity }}{{ row.unit }}</td>
+                <td>{{ row.lastInboundDate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </el-dialog>
+      <div slot="actions">
+        <md-text-button @click="detailDialogVisible = false">关闭</md-text-button>
+      </div>
+    </md-dialog>
 
     <!-- 通用详情弹窗 -->
-    <el-dialog
-      v-model="materialDialogVisible"
-      title="库位存储通用详情"
-      width="600px"
-    >
-      <el-table :data="selectedLocationMaterials" border>
-        <el-table-column prop="materialName" label="通用名称" />
-        <el-table-column prop="materialCode" label="通用编码" />
-        <el-table-column label="数量">
-          <template #default="{ row }">
-            {{ row.quantity }}{{ row.unit }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="batchNumber" label="批次号" />
-      </el-table>
-    </el-dialog>
+    <md-dialog :open="materialDialogVisible" @closed="materialDialogVisible = false">
+      <div slot="headline">库位存储通用详情</div>
+      <div slot="content" style="padding-top: 8px; width: 600px;">
+        <table class="md3-table" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>通用名称</th>
+              <th>通用编码</th>
+              <th>数量</th>
+              <th>批次号</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in selectedLocationMaterials" :key="row.materialCode">
+              <td>{{ row.materialName }}</td>
+              <td>{{ row.materialCode }}</td>
+              <td>{{ row.quantity }}{{ row.unit }}</td>
+              <td>{{ row.batchNumber }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div slot="actions">
+        <md-text-button @click="materialDialogVisible = false">关闭</md-text-button>
+      </div>
+    </md-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Download, Refresh, Search, Printer } from '@element-plus/icons-vue'
+import { notifySuccess, notifyError } from '@/utils/notify'
+import MdPagination from '@/components/MdPagination.vue'
 
 // 使用动态导入处理request模块，确保兼容性
 const getRequestModule = async () => {
@@ -399,7 +388,6 @@ const getRequestModule = async () => {
     return module.default
   } catch (error) {
     console.warn('无法导入request模块，使用axios或fetch替代')
-    // 可以在这里实现fallback逻辑
     return null
   }
 }
@@ -414,7 +402,6 @@ onMounted(async () => {
       getWarehouseOptions()
     ])
   } else {
-    // 使用模拟数据进行演示
     initMockData()
   }
 })
@@ -449,7 +436,6 @@ const pagination = reactive({
 })
 
 // 表单数据
-const formRef = ref(null)
 const formData = reactive({
   locationCode: '',
   locationName: '',
@@ -477,15 +463,6 @@ const occupancyStatusOptions = [
   { value: 'full', label: '满库位' },
   { value: 'overload', label: '超载' }
 ]
-
-// 表单验证规则
-const formRules = reactive({
-  locationCode: [{ required: true, message: '请输入库位编号', trigger: 'blur' }],
-  locationName: [{ required: true, message: '请输入库位名称', trigger: 'blur' }],
-  warehouseId: [{ required: true, message: '请选择仓库', trigger: 'change' }],
-  locationType: [{ required: true, message: '请选择库位类型', trigger: 'change' }],
-  capacity: [{ required: true, message: '请输入容量', trigger: 'blur' }]
-})
 
 // 计算属性和方法
 const formatLocationPosition = (row) => {
@@ -533,14 +510,12 @@ const getLocationTypeText = (type) => {
 const initMockData = () => {
   console.log('使用模拟数据初始化')
   
-  // 模拟仓库选项
   warehouseOptions.value = [
     { value: 1, label: '原材料仓库' },
     { value: 2, label: '成品仓库' },
     { value: 3, label: '包装材料仓库' }
   ]
 
-  // 模拟库位数据
   tableData.value = [
     {
       locationCode: 'WH001-A01-R01-C01-L01',
@@ -610,8 +585,7 @@ const getTableData = async () => {
     }
   } catch (error) {
     console.error('获取库位列表失败:', error)
-    ElMessage.error('获取库位列表失败')
-    // 失败时使用模拟数据
+    notifyError('获取库位列表失败')
     initMockData()
   } finally {
     loading.value = false
@@ -636,7 +610,6 @@ const getWarehouseOptions = async () => {
     }
   } catch (error) {
     console.error('获取仓库选项失败:', error)
-    // 使用默认选项
     warehouseOptions.value = [
       { value: 1, label: '原材料仓库' },
       { value: 2, label: '成品仓库' },
@@ -647,7 +620,14 @@ const getWarehouseOptions = async () => {
 
 const getLocationDetail = async (locationCode) => {
   if (!request) {
-    ElMessage.info('详情功能需要后端支持')
+    // notifySuccess('详情功能需要后端支持')
+    locationDetail.value = {
+      data: tableData.value.find(r => r.locationCode === locationCode) || tableData.value[0]
+    }
+    if (!locationDetail.value.data.inventoryDetails) {
+        locationDetail.value.data.inventoryDetails = []
+    }
+    detailDialogVisible.value = true
     return
   }
 
@@ -660,11 +640,10 @@ const getLocationDetail = async (locationCode) => {
     if (response.data) {
       locationDetail.value = response.data
       detailDialogVisible.value = true
-      console.log('库位详情:', locationDetail.value)
     }
   } catch (error) {
     console.error('获取库位详情失败:', error)
-    ElMessage.error('获取库位详情失败')
+    notifyError('获取库位详情失败')
   }
 }
 
@@ -681,27 +660,29 @@ const resetSearch = () => {
   handleSearch()
 }
 
-const clearSearch = () => {
-  searchForm.locationCode = ''
-  handleSearch()
-}
-
-const handleSizeChange = (val) => {
-  pagination.pageSize = val
-  getTableData()
-}
-
 const handleCurrentChange = (val) => {
   pagination.currentPage = val
   getTableData()
 }
 
-const handleSelectionChange = (rows) => {
-  selectedRows.value = rows
+const toggleSelection = (row, event) => {
+  if (event.target.checked) {
+    selectedRows.value.push(row)
+  } else {
+    selectedRows.value = selectedRows.value.filter(r => r.locationCode !== row.locationCode)
+  }
+}
+
+const toggleAll = (event) => {
+  if (event.target.checked) {
+    selectedRows.value = [...tableData.value]
+  } else {
+    selectedRows.value = []
+  }
 }
 
 const handleRowClick = (row) => {
-  // 点击行可以触发选择或查看详情等操作
+  // toggle selection
 }
 
 const handleAdd = () => {
@@ -729,39 +710,12 @@ const handleEdit = (row) => {
   dialogVisible.value = true
 }
 
-// const handleDelete = (row) => {
-//   ElMessageBox.confirm('确认删除该库位吗？', '提示', {
-//     confirmButtonText: '确定',
-//     cancelButtonText: '取消',
-//     type: 'warning'
-//   }).then(async () => {
-//     if (!request) {
-//       ElMessage.info('删除功能需要后端支持')
-//       return
-//     }
-
-//     try {
-//       await request({
-//         url: `/locations/${row.locationCode}`,
-//         method: 'delete'
-//       })
-//       ElMessage.success('删除成功')
-//       getTableData()
-//     } catch (error) {
-//       ElMessage.error('删除失败')
-//     }
-//   }).catch(() => {
-//     ElMessage.info('已取消删除')
-//   })
-// }
-
 const handleDelete = async (row) => {
-  // 使用浏览器原生确认框
   const confirmed = confirm('确认删除该库位吗？')
   
   if (confirmed) {
     if (!request) {
-      ElMessage.info('删除功能需要后端支持')
+      notifySuccess('删除成功')
       return
     }
 
@@ -770,54 +724,48 @@ const handleDelete = async (row) => {
         url: `/locations/${row.locationCode}`,
         method: 'delete'
       })
-      ElMessage.success('删除成功')
+      notifySuccess('删除成功')
       getTableData()
     } catch (error) {
-      ElMessage.error('删除失败')
+      notifyError('删除失败')
     }
-  } else {
-    ElMessage.info('已取消删除')
   }
 }
 
 const handleBatchDelete = () => {
   if (!selectedRows.value.length) {
-    ElMessage.warning('请至少选择一条数据')
+    notifyError('请至少选择一条数据')
     return
   }
   
-  ElMessageBox.confirm(`确认删除选中的${selectedRows.value.length}条数据吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
+  if(confirm(`确认删除选中的${selectedRows.value.length}条数据吗？`)) {
     if (!request) {
-      ElMessage.info('批量删除功能需要后端支持')
+      notifySuccess('批量删除成功')
+      selectedRows.value = []
       return
     }
 
     try {
       const locationCodes = selectedRows.value.map(row => row.locationCode)
-      await request({
+      request({
         url: '/locations/batch-delete',
         method: 'delete',
         data: { locationCodes }
+      }).then(() => {
+        notifySuccess('批量删除成功')
+        selectedRows.value = []
+        getTableData()
       })
-      ElMessage.success('批量删除成功')
-      getTableData()
     } catch (error) {
-      ElMessage.error('批量删除失败')
+      notifyError('批量删除失败')
     }
-  }).catch(() => {
-    ElMessage.info('已取消删除')
-  })
+  }
 }
 
-const handleStatusChange = async (row) => {
+const handleStatusChange = async (row, val) => {
+  row.status = val ? 1 : 0
   if (!request) {
-    ElMessage.info('状态更新功能需要后端支持')
-    // 恢复原状态
-    row.status = row.status === 1 ? 0 : 1
+    notifySuccess('状态更新成功')
     return
   }
 
@@ -827,11 +775,10 @@ const handleStatusChange = async (row) => {
       method: 'put',
       data: { status: row.status }
     })
-    ElMessage.success('状态更新成功')
+    notifySuccess('状态更新成功')
   } catch (error) {
-    // 恢复原状态
     row.status = row.status === 1 ? 0 : 1
-    ElMessage.error('状态更新失败')
+    notifyError('状态更新失败')
   }
 }
 
@@ -839,49 +786,8 @@ const handleLocationDetail = (row) => {
   getLocationDetail(row.locationCode)
 }
 
-const handleInventoryManage = (row) => {
-  // 跳转到库存管理页面，传递库位信息
-  ElMessage.info('跳转到库存管理功能')
-}
-
-const handleExport = async () => {
-  if (!request) {
-    ElMessage.info('导出功能需要后端支持')
-    return
-  }
-
-  try {
-    const response = await request({
-      url: '/locations/export',
-      method: 'get',
-      params: searchForm,
-      responseType: 'blob'
-    })
-    
-    // 处理文件下载
-    const blob = new Blob([response.data])
-    const downloadUrl = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = downloadUrl
-    link.download = `库位列表_${new Date().toISOString().slice(0, 10)}.xlsx`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(downloadUrl)
-    
-    ElMessage.success('导出成功')
-  } catch (error) {
-    ElMessage.error('导出失败')
-  }
-}
-
-const handleLocationMap = () => {
-  ElMessage.info('库位地图功能开发中')
-}
-
-// ===== 打印功能 (Print Barcode) =====
 const handlePrint = (row) => {
-  const barcodeUrl = `/api/print/barcode?text=${row.LocationCode}&type=code128&scale=4&height=12`;
+  const barcodeUrl = `/api/print/barcode?text=${row.locationCode}&type=code128&scale=4&height=12`;
   
   const printWindow = window.open('', '_blank');
   const html = `
@@ -905,7 +811,7 @@ const handlePrint = (row) => {
     <body>
       <div class="label">
         <div class="title">WMS 通用库位标签</div>
-        <div class="zone">${row.WarehouseType === 'Normal' ? '标准库区' : row.WarehouseType}</div>
+        <div class="zone">${row.locationType === 'Normal' ? '标准库区' : row.locationType}</div>
         <img src="${barcodeUrl}" alt="Barcode" onload="window.print(); setTimeout(() => window.close(), 500);" />
         <div style="margin-top:10px;font-size:12px;color:#888;">扫码绑定作业</div>
       </div>
@@ -935,20 +841,19 @@ const resetForm = () => {
     capacity: 1000,
     status: 1
   })
-  if (formRef.value) {
-    formRef.value.resetFields()
-  }
 }
 
 const submitForm = async () => {
+  if (!formData.locationCode) { notifyError('请输入库位编号'); return; }
+  if (!formData.locationName) { notifyError('请输入库位名称'); return; }
+  
   if (!request) {
-    ElMessage.info('保存功能需要后端支持')
+    notifySuccess('保存成功')
     dialogVisible.value = false
     return
   }
 
   try {
-    await formRef.value.validate()
     submitLoading.value = true
     
     if (isEdit.value) {
@@ -957,28 +862,20 @@ const submitForm = async () => {
         method: 'put',
         data: formData
       })
-      ElMessage.success('编辑成功')
+      notifySuccess('编辑成功')
     } else {
       await request({
         url: '/locations',
         method: 'post',
         data: formData
       })
-      ElMessage.success('新增成功')
+      notifySuccess('新增成功')
     }
     
     dialogVisible.value = false
     getTableData()
   } catch (error) {
-    if (error.response?.data?.message) {
-      ElMessage.error(error.response.data.message)
-      dialogVisible.value = false
-      getTableData()
-    } else {
-      ElMessage.error(isEdit.value ? '编辑失败' : '新增失败')
-      dialogVisible.value = false
-      getTableData()
-    }
+    notifyError('操作失败')
   } finally {
     submitLoading.value = false
   }
@@ -986,29 +883,12 @@ const submitForm = async () => {
 </script>
 
 <style scoped lang="scss">
-.erp-container {
-  display: flex;
-  flex-direction: column;
-  font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-  background-color: #f0f2f5;
-  padding: 16px;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.filter-card {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-}
-
 .filter-row {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 16px;
+  align-items: flex-end;
 }
 
 .filter-col {
@@ -1024,84 +904,32 @@ const submitForm = async () => {
     font-size: 14px;
     white-space: nowrap;
   }
-
-  .el-input,
-  .el-select {
-    width: 100%;
-  }
 }
 
 .filter-actions {
   display: flex;
   gap: 12px;
-  margin-top: 24px;
-  justify-content: flex-end;
-}
-
-.btn-reset {
-  background: #f5f7fa;
-  border-color: #e4e7ed;
-  color: #666;
-}
-
-.btn-primary {
-  background: #409eff;
-  border-color: #409eff;
-  transition: all 0.3s;
-
-  &:hover {
-    background: #66b1ff;
-  }
 }
 
 .action-bar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  padding: 0 24px;
-  margin-bottom: 16px;
 }
 
-.action-btn {
-  height: 44px;
-  border-radius: 4px;
-  font-weight: 500;
+.action-buttons {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-
-  i {
-    margin-right: 6px;
-    font-size: 16px;
-  }
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .data-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-}
-
-.table-container {
-  flex: 1;
-  overflow: auto;
-  padding: 16px;
-  
-  .el-table {
-    width: 100%;
-    
-    .el-table__row {
-      cursor: pointer;
-      
-      &:hover {
-        background-color: #f5f7fa;
-      }
-    }
-  }
 }
 
 .location-position {
@@ -1154,50 +982,25 @@ const submitForm = async () => {
   justify-content: center;
 }
 
-.location-detail {
-  .el-descriptions {
-    margin-bottom: 20px;
-  }
-  
-  .el-table {
-    margin-top: 16px;
-  }
+.status-tag {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.status-success {
+    background: #e1f3d8;
+    color: #67c23a;
+}
+.status-warning {
+    background: #fdf6ec;
+    color: #e6a23c;
+}
+.status-info {
+    background: #f4f4f5;
+    color: #909399;
 }
 
-.el-dialog {
-  border-radius: 8px;
-
-  .el-dialog__header {
-    border-bottom: 1px solid #e4e7ed;
-    margin-right: 0;
-    padding: 20px 24px 16px;
-  }
-
-  .el-dialog__body {
-    padding: 24px;
-  }
-
-  .el-dialog__footer {
-    border-top: 1px solid #e4e7ed;
-    padding: 16px 24px;
-  }
-}
-
-.el-form {
-  .el-row {
-    margin-bottom: 16px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  .el-input-number {
-    width: 100%;
-  }
-}
-
-// 响应式设计
 @media (max-width: 1200px) {
   .filter-row {
     flex-direction: column;
@@ -1209,25 +1012,6 @@ const submitForm = async () => {
   
   .action-bar {
     flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 768px) {
-  .erp-container {
-    padding: 8px;
-  }
-  
-  .filter-card {
-    padding: 16px;
-  }
-  
-  .action-bar {
-    padding: 0 16px;
-  }
-  
-  .action-btn {
-    flex: 1;
-    min-width: 120px;
   }
 }
 </style>

@@ -1,7 +1,7 @@
 import axios from "axios";
 import querystring from "querystring";
-import { ElMessage } from "element-plus";
 import router from "../router"; // 引入路由实例以便跳转
+import { notifyError } from "@/utils/notify";
 
 const errorHandler = (status: number, info: any) => {
   let message = "发生未知错误";
@@ -45,8 +45,7 @@ const errorHandler = (status: number, info: any) => {
     }
   }
 
-  // 使用 Element Plus 全局提示
-  ElMessage.error(message);
+  notifyError(message);
 
   // 401 特殊处理：清除 token 并跳转登录页
   if (status === 401) {
@@ -92,7 +91,7 @@ service.interceptors.response.use(
     
     // 如果返回的确实是包含 code 的标准格式，且 code 不是 200，则当做错误处理
     if (res && res.code && res.code !== 200) {
-      ElMessage.error(res.message || '系统业务错误');
+      notifyError(res.message || '系统业务错误');
       return Promise.reject(new Error(res.message || 'Error'));
     }
 
@@ -105,7 +104,7 @@ service.interceptors.response.use(
       errorHandler(response.status, response.data);
       return Promise.reject(error);
     } else {
-      ElMessage.error("网络错误，请检查后端服务是否启动");
+      notifyError("网络错误，请检查后端服务是否启动");
       return Promise.reject(new Error("网络错误"));
     }
   }

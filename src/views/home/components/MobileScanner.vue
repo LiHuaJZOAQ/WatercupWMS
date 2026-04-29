@@ -1,59 +1,64 @@
 <template>
-  <div class="mobile-scanner-container">
-    <div class="scanner-header">
-      <h2><el-icon><Aim /></el-icon> 移动扫码工作台 (PDA)</h2>
-      <el-tag type="success" effect="dark">连接正常</el-tag>
-    </div>
+  <div class="md3-page">
+    <md-elevated-card class="md3-card md3-card--tight">
+      <div class="scanner-header">
+        <div class="scanner-title">
+          <md-icon aria-hidden="true">qr_code_scanner</md-icon>
+          移动扫码工作台 (PDA)
+        </div>
+        <md-assist-chip>
+          <md-icon slot="icon">wifi</md-icon>
+          连接正常
+        </md-assist-chip>
+      </div>
+    </md-elevated-card>
 
-    <el-card class="scanner-card" shadow="always">
+    <md-elevated-card class="md3-card">
       <div class="camera-placeholder" @click="focusInput">
-        <el-icon class="camera-icon"><Camera /></el-icon>
+        <md-icon class="camera-icon">photo_camera</md-icon>
         <p>点击此处唤起扫码枪输入焦点</p>
         <p class="sub-text">(或直接使用键盘输入条码并回车)</p>
       </div>
 
-      <div class="input-section">
-        <el-input
+      <div class="input-section" style="display: flex; gap: 8px;">
+        <md-outlined-text-field
           ref="scanInput"
-          v-model="barcode"
+          :value="barcode"
+          @input="barcode = $event.target.value"
           placeholder="扫描或输入条码 (如: LOC-A1-01, MAT-1001)"
-          clearable
-          size="large"
           @keyup.enter="handleScan"
+          style="flex: 1;"
         >
-          <template #prefix>
-            <el-icon><Crop /></el-icon>
-          </template>
-          <template #append>
-            <el-button type="primary" @click="handleScan">确定</el-button>
-          </template>
-        </el-input>
+          <md-icon slot="leading-icon">barcode_reader</md-icon>
+        </md-outlined-text-field>
+        <md-filled-button @click="handleScan" style="margin-top: 8px;">确定</md-filled-button>
       </div>
-    </el-card>
+    </md-elevated-card>
 
     <!-- 最近扫描记录 -->
-    <el-card class="history-card" header="近期扫码记录 (本地模拟)" shadow="hover">
-      <el-timeline v-if="scanHistory.length > 0">
-        <el-timeline-item
-          v-for="(item, index) in scanHistory"
-          :key="index"
-          :type="item.type"
-          :timestamp="item.time"
-        >
-          <strong>{{ item.code }}</strong>
-          <p class="history-msg">{{ item.message }}</p>
-        </el-timeline-item>
-      </el-timeline>
-      <el-empty v-else description="暂无扫描记录" :image-size="60"></el-empty>
-    </el-card>
+    <md-elevated-card class="md3-card">
+      <div class="history-header">近期扫码记录 (本地模拟)</div>
+      <div v-if="scanHistory.length > 0" class="history-list">
+        <div v-for="(item, index) in scanHistory" :key="index" class="history-item" :data-type="item.type">
+          <div class="history-meta">
+            <div class="history-code">{{ item.code }}</div>
+            <div class="history-time">{{ item.time }}</div>
+          </div>
+          <div class="history-msg">{{ item.message }}</div>
+        </div>
+      </div>
+      <div v-else class="history-empty">
+        <md-icon>inbox</md-icon>
+        暂无扫描记录
+      </div>
+    </md-elevated-card>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
-import { ElMessage } from 'element-plus';
-import { Aim, Camera, Crop } from '@element-plus/icons-vue';
 import moment from 'moment';
+import { notifySuccess, notifyError } from '@/utils/notify'
 
 const scanInput = ref(null);
 const barcode = ref('');
@@ -72,7 +77,7 @@ const focusInput = () => {
 const handleScan = () => {
   const code = barcode.value.trim().toUpperCase();
   if (!code) {
-    ElMessage.warning('请输入或扫描有效条码');
+    notifyError('请输入或扫描有效条码');
     return;
   }
 
@@ -107,7 +112,12 @@ const handleScan = () => {
     scanHistory.value.pop();
   }
 
-  ElMessage({ message, type: type === 'danger' ? 'error' : 'success' });
+  if (type === 'danger') {
+    notifyError(message);
+  } else {
+    notifySuccess(message);
+  }
+  
   barcode.value = ''; // 清空以备下次扫码
   focusInput();
 };
@@ -117,38 +127,33 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.mobile-scanner-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
+<style scoped lang="scss">
 .scanner-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 12px;
 }
 
-.scanner-header h2 {
-  margin: 0;
-  display: flex;
+.scanner-title {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #303133;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
 }
 
-.scanner-card {
-  margin-bottom: 20px;
-  border-radius: 12px;
+.camera-icon {
+  font-size: 28px;
+  color: var(--md-sys-color-primary);
 }
 
 .camera-placeholder {
   height: 150px;
-  background-color: #f5f7fa;
-  border: 2px dashed #dcdfe6;
-  border-radius: 8px;
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 2px dashed var(--md-sys-color-outline-variant);
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -159,35 +164,73 @@ onMounted(() => {
 }
 
 .camera-placeholder:hover {
-  border-color: #409eff;
-  background-color: #ecf5ff;
-}
-
-.camera-icon {
-  font-size: 48px;
-  color: #909399;
-  margin-bottom: 10px;
+  border-color: var(--md-sys-color-primary);
+  background-color: color-mix(in srgb, var(--md-sys-color-primary) 8%, var(--md-sys-color-surface-container-low));
 }
 
 .camera-placeholder p {
   margin: 5px 0;
-  color: #606266;
-  font-weight: bold;
+  color: var(--md-sys-color-on-surface);
+  font-weight: 700;
 }
 
 .sub-text {
   font-size: 12px;
-  color: #909399 !important;
+  color: var(--md-sys-color-on-surface-variant) !important;
   font-weight: normal !important;
 }
 
-.history-card {
-  border-radius: 12px;
+.history-header {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 12px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-item {
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.history-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.history-code {
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  color: var(--md-sys-color-on-surface);
+}
+
+.history-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .history-msg {
   margin: 4px 0 0;
-  color: #606266;
+  color: var(--md-sys-color-on-surface-variant);
   font-size: 13px;
+}
+
+.history-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 2px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 650;
 }
 </style>

@@ -1,58 +1,106 @@
 <template>
- <div class="header-info">
- <!-- 左侧占位元素 -->
- <div class="left-placeholder"></div>
- 
- <!-- 右侧用户信息 -->
- <div class="user-info">
- <el-icon class="search-icon"><Search /></el-icon>
- <el-avatar class="user-avatar">U</el-avatar>
- <span class="user-name">{{ useAuthStore().user }}</span>
- </div>
- </div>
+  <div class="md3-top-app-bar">
+    <div class="left-section">
+      <h2 class="page-title">{{ currentRouteName }}</h2>
+    </div>
+    
+    <div class="right-section">
+      <md-icon-button class="action-btn">
+        <md-icon>search</md-icon>
+      </md-icon-button>
+      
+      <md-icon-button class="action-btn">
+        <md-icon>notifications</md-icon>
+      </md-icon-button>
+
+      <div class="user-profile">
+        <div class="avatar">{{ userInitial }}</div>
+        <span class="user-name">{{ userName }}</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { Search } from '@element-plus/icons-vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+
+const route = useRoute()
+const authStore = useAuthStore()
+
+const currentRouteName = computed(() => {
+  return route.name ? String(route.name) : 'Dashboard'
+})
+
+const userName = computed(() => authStore.user || 'Guest')
+const userInitial = computed(() => userName.value.charAt(0).toUpperCase())
 </script>
 
-<style scoped>
-.header-info { 
- display: flex;
- width: 100%;
- height: 100%;
- justify-content: space-between; /* 关键修改：两端分布 */
- align-items: center;
- background-color: #f5f7fa;
+<style scoped lang="scss">
+.md3-top-app-bar { 
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: space-between;
+  align-items: center;
+  background-color: transparent;
 }
 
-.left-placeholder {
- flex: 1; /* 占据左侧空间 */
+.left-section {
+  display: flex;
+  align-items: center;
+  
+  .page-title {
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--md-sys-color-on-surface, #1a1c1e);
+    margin: 0;
+  }
 }
 
-.user-info {
- display: flex;
- align-items: center;
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.search-icon {
-    margin-right: 10px;
-    font-size: 18px; /* 调整图标大小 */
-    color: #666; /* 图标颜色 */
+.action-btn {
+  color: var(--md-sys-color-on-surface-variant, #44474e);
 }
 
-.user-avatar {
- margin: 0 10px;
- width: 30px;
- height: 30px;
- background-color: #c0c4cc;
- color: #fff;
- font-size: 14px;
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 12px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 24px;
+  background-color: var(--md-sys-color-surface-container-high, #e7e8ea);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: var(--md-sys-color-surface-container-highest, #e2e2e5);
+  }
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--md-sys-color-primary, #0061a4);
+  color: var(--md-sys-color-on-primary, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .user-name {
- font-size: 14px;
- color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface, #1a1c1e);
 }
 </style>

@@ -59,7 +59,6 @@
 import { ref ,Teleport,defineProps,watch} from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { fa } from 'element-plus/es/locales.mjs';
 
 const props= defineProps<{
   State: boolean

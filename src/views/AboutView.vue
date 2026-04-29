@@ -1,181 +1,198 @@
 <template>
-  <div class="erp-container">
-    <el-card shadow="never" class="filter-card">
-      <el-form :inline="true" :model="searchForm" class="filter-row">
+  <div class="erp-container md3-page">
+    <md-elevated-card class="filter-card md3-card">
+      <form class="filter-row" @submit.prevent="handleSearch">
         <div class="filter-col">
           <label>原料名称</label>
-          <el-input
-            v-model="searchForm.materialName"
+          <md-outlined-text-field
+            :value="searchForm.materialName"
+            @input="searchForm.materialName = $event.target.value"
             placeholder="请输入原料名称"
-            clearable
           />
         </div>
         <div class="filter-col">
           <label>仓位编号</label>
-          <el-input
-            v-model="searchForm.locationCode"
+          <md-outlined-text-field
+            :value="searchForm.locationCode"
+            @input="searchForm.locationCode = $event.target.value"
             placeholder="请输入仓位编号"
-            clearable
           />
         </div>
         <div class="filter-actions">
-          <el-button class="btn-reset" @click="resetSearch">重置</el-button>
-          <el-button type="primary" class="btn-primary" @click="handleSearch">查询</el-button>
+          <md-text-button @click.prevent="resetSearch">重置</md-text-button>
+          <md-filled-button @click.prevent="handleSearch">查询</md-filled-button>
         </div>
-      </el-form>
-    </el-card>
+      </form>
+    </md-elevated-card>
 
-    <div class="action-bar">
-      <el-button type="primary" class="action-btn" @click="handleAdd">
-        <el-icon><Plus /></el-icon>新增
-      </el-button>
-      <el-button 
-        type="danger" 
-        class="action-btn" 
-        :disabled="!selectedRows.length" 
-        @click="handleBatchDelete"
-      >
-        <el-icon><Delete /></el-icon>批量删除
-      </el-button>
-    </div>
+    <md-elevated-card class="md3-card md3-card--tight" style="margin-bottom: 16px;">
+      <div class="action-bar md3-action-bar">
+        <md-filled-tonal-button class="action-btn" @click="handleAdd">
+          <md-icon slot="icon">add</md-icon>新增
+        </md-filled-tonal-button>
+        <md-filled-button 
+          class="action-btn" 
+          :disabled="!selectedRows.length" 
+          @click="handleBatchDelete"
+        >
+          <md-icon slot="icon">delete</md-icon>批量删除
+        </md-filled-button>
+      </div>
+    </md-elevated-card>
 
-    <div class="data-container">
-      <el-table
-        v-loading="loading"
-        :data="tableData"
-        border
-        style="width: 100%"
-        @selection-change="handleSelectionChange"
-      >
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="materialCode" label="原料编码" width="120" />
-        <el-table-column prop="materialName" label="原料名称" width="150" />
-        <el-table-column prop="specification" label="规格" width="120" />
-        <el-table-column prop="locationCode" label="仓位编号" width="120" />
-        <el-table-column prop="locationName" label="仓位名称" width="150" />
-        <el-table-column prop="quantity" label="库存数量" width="120" />
-        <el-table-column prop="unit" label="单位" width="80" />
-        <el-table-column prop="status" label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === '1' ? 'success' : 'danger'">
-              {{ row.status === '1' ? '启用' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="remark" label="备注" />
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <el-button size="small" link @click="handleEdit(row)">编辑</el-button>
-            <el-button size="small" link type="danger" @click="handleDelete(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+    <md-elevated-card class="data-container md3-card md3-table-card">
+      <div style="padding: 16px; overflow-x: auto;">
+        <table class="md3-table" style="width: 100%;">
+          <thead>
+            <tr>
+              <th><md-checkbox @change="toggleAll" :checked="selectedRows.length === tableData.length && tableData.length > 0"></md-checkbox></th>
+              <th>原料编码</th>
+              <th>原料名称</th>
+              <th>规格</th>
+              <th>仓位编号</th>
+              <th>仓位名称</th>
+              <th>库存数量</th>
+              <th>单位</th>
+              <th>状态</th>
+              <th>备注</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="loading">
+              <td colspan="11" style="text-align: center; padding: 20px;">加载中...</td>
+            </tr>
+            <tr v-else-if="tableData.length === 0">
+              <td colspan="11" style="text-align: center; padding: 20px;">暂无数据</td>
+            </tr>
+            <tr v-else v-for="row in tableData" :key="row.id">
+              <td>
+                <md-checkbox 
+                  :checked="selectedRows.includes(row)" 
+                  @change="toggleSelection(row, $event)"
+                ></md-checkbox>
+              </td>
+              <td>{{ row.materialCode }}</td>
+              <td>{{ row.materialName }}</td>
+              <td>{{ row.specification }}</td>
+              <td>{{ row.locationCode }}</td>
+              <td>{{ row.locationName }}</td>
+              <td>{{ row.quantity }}</td>
+              <td>{{ row.unit }}</td>
+              <td>
+                <span :class="['status-tag', row.status === '1' ? 'status-success' : 'status-danger']">
+                  {{ row.status === '1' ? '启用' : '禁用' }}
+                </span>
+              </td>
+              <td>{{ row.remark }}</td>
+              <td>
+                <md-text-button @click="handleEdit(row)">编辑</md-text-button>
+                <md-text-button @click="handleDelete(row)" style="--md-sys-color-primary: var(--md-sys-color-error);">删除</md-text-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <div class="pagination">
-        <el-pagination
-          background
-          layout="prev, pager, next"
+        <MdPagination
           :current-page="pagination.currentPage"
           :page-size="pagination.pageSize"
           :total="pagination.total"
           @current-change="handleCurrentChange"
         />
       </div>
-    </div>
+    </md-elevated-card>
 
     <!-- 新增/编辑对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="600px"
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="formRef"
-        :model="formData"
-        :rules="formRules"
-        label-width="100px"
-      >
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="原料名称" prop="materialId">
-              <el-select
-                v-model="formData.materialId"
-                placeholder="请选择原料"
-                filterable
-                style="width: 100%"
+    <md-dialog :open="dialogVisible" @closed="dialogVisible = false">
+      <div slot="headline">{{ dialogTitle }}</div>
+      <div slot="content" style="display: flex; flex-direction: column; gap: 16px; padding-top: 8px;">
+        <form id="editForm" @submit.prevent="submitForm">
+          <div class="form-row">
+            <label>原料</label>
+            <md-outlined-select
+              :value="formData.materialId"
+              @change="formData.materialId = $event.target.value"
+              style="width: 100%"
+            >
+              <md-select-option
+                v-for="item in materialOptions"
+                :key="item.id"
+                :value="item.id"
               >
-                <el-option
-                  v-for="item in materialOptions"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="仓位编号" prop="locationCode">
-              <el-input v-model="formData.locationCode" placeholder="请输入仓位编号" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="仓位名称" prop="locationName">
-              <el-input v-model="formData.locationName" placeholder="请输入仓位名称" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="库存数量" prop="quantity">
-              <el-input-number
-                v-model="formData.quantity"
-                :min="0"
-                :precision="2"
-                controls-position="right"
+                <div slot="headline">{{ item.name }}</div>
+              </md-select-option>
+            </md-outlined-select>
+          </div>
+          
+          <div class="form-row" style="display: flex; gap: 16px;">
+            <div style="flex: 1;">
+              <label>仓位编号</label>
+              <md-outlined-text-field
+                :value="formData.locationCode"
+                @input="formData.locationCode = $event.target.value"
                 style="width: 100%"
               />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="状态" prop="status">
-              <el-radio-group v-model="formData.status">
-                <el-radio :label="1">启用</el-radio>
-                <el-radio :label="0">禁用</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="备注" prop="remark">
-              <el-input
-                v-model="formData.remark"
-                type="textarea"
-                :rows="3"
-                placeholder="请输入备注"
+            </div>
+            <div style="flex: 1;">
+              <label>仓位名称</label>
+              <md-outlined-text-field
+                :value="formData.locationName"
+                @input="formData.locationName = $event.target.value"
+                style="width: 100%"
               />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
-      </template>
-    </el-dialog>
+            </div>
+          </div>
+          
+          <div class="form-row" style="display: flex; gap: 16px;">
+            <div style="flex: 1;">
+              <label>库存数量</label>
+              <md-outlined-text-field
+                type="number"
+                :value="formData.quantity"
+                @input="formData.quantity = $event.target.value"
+                style="width: 100%"
+              />
+            </div>
+            <div style="flex: 1;">
+              <label style="display: block; margin-bottom: 8px;">状态</label>
+              <div style="display: flex; gap: 16px; align-items: center;">
+                <label style="display: flex; align-items: center; gap: 4px;">
+                  <md-radio name="status" value="1" :checked="formData.status == 1" @change="formData.status = 1"></md-radio>
+                  启用
+                </label>
+                <label style="display: flex; align-items: center; gap: 4px;">
+                  <md-radio name="status" value="0" :checked="formData.status == 0" @change="formData.status = 0"></md-radio>
+                  禁用
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <label>备注</label>
+            <md-outlined-text-field
+              type="textarea"
+              :value="formData.remark"
+              @input="formData.remark = $event.target.value"
+              style="width: 100%"
+            />
+          </div>
+        </form>
+      </div>
+      <div slot="actions">
+        <md-text-button @click="dialogVisible = false">取消</md-text-button>
+        <md-filled-button @click="submitForm">确定</md-filled-button>
+      </div>
+    </md-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Delete } from '@element-plus/icons-vue'
+import { notifySuccess, notifyError } from '@/utils/notify'
+import MdPagination from '@/components/MdPagination.vue'
 
 // 模拟API请求
 const mockApi = {
@@ -258,7 +275,6 @@ const pagination = reactive({
 // 对话框相关
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
-const formRef = ref(null)
 const formData = reactive({
   id: '',
   materialId: '',
@@ -267,14 +283,6 @@ const formData = reactive({
   quantity: 0,
   status: 1,
   remark: ''
-})
-
-// 表单验证规则
-const formRules = reactive({
-  materialId: [{ required: true, message: '请选择原料', trigger: 'change' }],
-  locationCode: [{ required: true, message: '请输入仓位编号', trigger: 'blur' }],
-  locationName: [{ required: true, message: '请输入仓位名称', trigger: 'blur' }],
-  quantity: [{ required: true, message: '请输入库存数量', trigger: 'blur' }]
 })
 
 // 原料下拉选项
@@ -286,7 +294,7 @@ const getMaterialOptions = async () => {
     const res = await mockApi.getMaterials()
     materialOptions.value = res
   } catch (error) {
-    ElMessage.error('获取原料列表失败')
+    notifyError('获取原料列表失败')
     console.error(error)
   }
 }
@@ -304,7 +312,7 @@ const getTableData = async () => {
     tableData.value = res.data
     pagination.total = res.total
   } catch (error) {
-    ElMessage.error('获取数据失败')
+    notifyError('获取数据失败')
     console.error(error)
   } finally {
     loading.value = false
@@ -324,12 +332,6 @@ const resetSearch = () => {
   handleSearch()
 }
 
-// 分页大小改变
-const handleSizeChange = (val) => {
-  pagination.pageSize = val
-  getTableData()
-}
-
 // 当前页改变
 const handleCurrentChange = (val) => {
   pagination.currentPage = val
@@ -337,8 +339,20 @@ const handleCurrentChange = (val) => {
 }
 
 // 表格多选
-const handleSelectionChange = (rows) => {
-  selectedRows.value = rows
+const toggleSelection = (row, event) => {
+  if (event.target.checked) {
+    selectedRows.value.push(row)
+  } else {
+    selectedRows.value = selectedRows.value.filter(r => r.id !== row.id)
+  }
+}
+
+const toggleAll = (event) => {
+  if (event.target.checked) {
+    selectedRows.value = [...tableData.value]
+  } else {
+    selectedRows.value = []
+  }
 }
 
 // 新增
@@ -365,37 +379,26 @@ const handleEdit = (row) => {
 
 // 删除
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确认删除该仓位信息吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    // 这里调用删除API
-    ElMessage.success('删除成功')
+  if (confirm('确认删除该仓位信息吗？')) {
+    notifySuccess('删除成功')
     getTableData()
-  }).catch(() => {
-    ElMessage.info('已取消删除')
-  })
+  } else {
+    // cancelled
+  }
 }
 
 // 批量删除
 const handleBatchDelete = () => {
   if (!selectedRows.value.length) {
-    ElMessage.warning('请至少选择一条数据')
+    notifyError('请至少选择一条数据')
     return
   }
   
-  ElMessageBox.confirm(`确认删除选中的${selectedRows.value.length}条数据吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    // 这里调用批量删除API
-    ElMessage.success('删除成功')
+  if (confirm(`确认删除选中的${selectedRows.value.length}条数据吗？`)) {
+    notifySuccess('删除成功')
+    selectedRows.value = []
     getTableData()
-  }).catch(() => {
-    ElMessage.info('已取消删除')
-  })
+  }
 }
 
 // 重置表单
@@ -409,24 +412,23 @@ const resetForm = () => {
     status: 1,
     remark: ''
   })
-  if (formRef.value) {
-    formRef.value.resetFields()
-  }
 }
 
 // 提交表单
 const submitForm = async () => {
   try {
-    await formRef.value.validate()
+    if (!formData.materialId) { notifyError('请选择原料'); return; }
+    if (!formData.locationCode) { notifyError('请输入仓位编号'); return; }
+    if (!formData.locationName) { notifyError('请输入仓位名称'); return; }
+    if (formData.quantity === '' || formData.quantity === null) { notifyError('请输入库存数量'); return; }
     
-    // 这里调用新增/编辑API
     const isEdit = !!formData.id
     const message = isEdit ? '编辑成功' : '新增成功'
     
     // 模拟API调用
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    ElMessage.success(message)
+    notifySuccess(message)
     dialogVisible.value = false
     getTableData()
   } catch (error) {
@@ -451,18 +453,11 @@ onMounted(() => {
     height: 100%;
 }
 
-.filter-card {
-    background: white;
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-}
-
 .filter-row {
     display: flex;
     gap: 16px;
     margin-bottom: 16px;
+    align-items: flex-end;
 }
 
 .filter-col {
@@ -478,125 +473,43 @@ onMounted(() => {
         font-size: 14px;
         white-space: nowrap;
     }
-
-    .el-input {
-        width: 100%;
-
-        .el-input__inner {
-            height: 40px;
-            border-radius: 4px;
-            border-color: #e4e7ed;
-            transition: all 0.3s;
-
-            &:focus {
-                border-color: #409eff;
-                box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-            }
-        }
-    }
 }
 
 .filter-actions {
     display: flex;
     gap: 12px;
-    margin-top: 24px;
-    justify-content: flex-end;
 }
 
-.btn-reset {
-    background: #f5f7fa;
-    border-color: #e4e7ed;
-    color: #666;
-}
-
-.btn-primary {
-    background: #409eff;
-    border-color: #409eff;
-    transition: all 0.3s;
-
-    &:hover {
-        background: #66b1ff;
-    }
-}
-
-.action-bar {
-    display: flex;
-    gap: 12px;
-    padding: 0 24px;
+.form-row {
     margin-bottom: 16px;
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+        font-size: 14px;
+    }
 }
 
-.action-btn {
-    flex: 1;
-    height: 44px;
+.status-tag {
+    padding: 4px 8px;
     border-radius: 4px;
+    font-size: 12px;
     font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    i {
-        margin-right: 6px;
-        font-size: 18px;
-    }
 }
-
-.data-container {
-    flex: 1;
-    overflow: hidden;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-
-    .el-table {
-        margin-top: 16px;
-
-        ::v-deep .cell {
-            padding: 12px;
-        }
-
-        .action-link {
-            margin-left: 12px;
-            font-size: 14px;
-        }
-    }
+.status-success {
+    background: #e1f3d8;
+    color: #67c23a;
+}
+.status-danger {
+    background: #fde2e2;
+    color: #f56c6c;
 }
 
 .pagination {
     padding: 16px;
     display: flex;
+    justify-content: center;
     background: white;
-}
-
-.el-dialog {
-    border-radius: 8px;
-
-    .el-dialog__header {
-        border-bottom: 1px solid #e4e7ed;
-        margin-right: 0;
-    }
-
-    .el-dialog__body {
-        padding: 24px;
-    }
-
-    .el-dialog__footer {
-        border-top: 1px solid #e4e7ed;
-        padding: 16px 24px;
-    }
-}
-
-.el-form {
-    .el-row {
-        margin-bottom: 16px;
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-    }
-
-    .el-input-number {
-        width: 100%;
-    }
 }
 </style>

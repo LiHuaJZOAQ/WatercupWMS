@@ -1,399 +1,251 @@
 <template>
-    <div class="erp-container">
-        <!-- 筛选卡片 -->
+    <div class="md3-page">
+        <md-elevated-card class="md3-card">
         <div class="filter-card">
             <div class="filter-row">
                 <div class="filter-col">
                     <label>商品名称/编码</label>
-                    <el-input v-model="searchQuery" placeholder="请输入商品名称或编码" clearable @clear="clearSearch" />
+                    <md-outlined-text-field :value="searchQuery" @input="searchQuery = $event.target.value" placeholder="请输入商品名称或编码" />
                 </div>
                 <div class="filter-col">
                     <label>分类</label>
-                    <el-select v-model="categoryFilter" placeholder="全部分类" clearable>
-                        <el-option v-for="item in categories" :key="item.value" :label="item.label"
-                            :value="item.value" />
-                    </el-select>
+                    <md-outlined-select :value="categoryFilter" @change="categoryFilter = $event.target.value" placeholder="全部分类">
+                        <md-select-option v-for="item in categories" :key="item.value" :value="item.value">
+                            <div slot="headline">{{item.label}}</div>
+                        </md-select-option>
+                    </md-outlined-select>
                 </div>
                 <div class="filter-col">
                     <label>状态</label>
-                    <el-select v-model="statusFilter" placeholder="全部状态" clearable>
-                        <el-option v-for="item in statusOptions" :key="item.value" :label="item.label"
-                            :value="item.value" />
-                    </el-select>
+                    <md-outlined-select :value="statusFilter" @change="statusFilter = $event.target.value" placeholder="全部状态">
+                        <md-select-option v-for="item in statusOptions" :key="item.value" :value="item.value">
+                            <div slot="headline">{{item.label}}</div>
+                        </md-select-option>
+                    </md-outlined-select>
                 </div>
             </div>
             <div class="filter-actions">
-                <el-button class="btn-reset" @click="resetFilters">重置</el-button>
-                <el-button class="btn-primary" @click="handleSearch">查询</el-button>
+                <md-text-button @click="resetFilters">重置</md-text-button>
+                <md-filled-button @click="handleSearch">查询</md-filled-button>
             </div>
         </div>
+        </md-elevated-card>
 
         <!-- 操作栏 -->
-        <div class="action-bar">
-            <el-button class="action-btn" type="primary" @click="handleAdd">
-                <i class="el-icon-plus"></i>
-                新增商品
-            </el-button>
-            <el-button class="action-btn" @click="exportData">
-                <i class="el-icon-download"></i>
-                导出数据
-            </el-button>
-        </div>
+        <md-elevated-card class="md3-card md3-card--tight">
+            <div class="action-bar md3-action-bar">
+                <div class="md3-action-title">全局库存查询</div>
+                <div class="action-buttons">
+                    <md-filled-tonal-button @click="handleAdd">
+                        <md-icon slot="icon">add</md-icon>
+                        新增商品
+                    </md-filled-tonal-button>
+                    <md-filled-button @click="exportData">
+                        <md-icon slot="icon">download</md-icon>
+                        导出数据
+                    </md-filled-button>
+                </div>
+            </div>
+        </md-elevated-card>
 
         <!-- 数据表格 -->
-        <div class="data-container">
-            <div class="table-wrapper">
-                <el-table 
-                    :data="materials" 
-                    border 
-                    stripe 
-                    v-loading="loading"
-                    @selection-change="handleSelectionChange"
-                    style="width: 100%"
-                    height="440"
-                    empty-text="暂无数据">
-                    
-                    <el-table-column type="selection" width="50" align="center" />
-                    
-                    <el-table-column prop="code" label="商品编码" width="120" show-overflow-tooltip>
-                        <template #default="{ row }">
-                            {{ row.code || '-' }}
-                        </template>
-                    </el-table-column>
-                    
-                    <el-table-column prop="name" label="商品名称" width="150" show-overflow-tooltip>
-                        <template #default="{ row }">
-                            {{ row.name || '-' }}
-                        </template>
-                    </el-table-column>
-                    
-                    <el-table-column prop="category" label="分类" width="120" show-overflow-tooltip>
-                        <template #default="{ row }">
-                            {{ row.category || '-' }}
-                        </template>
-                    </el-table-column>
-                    
-                    <el-table-column prop="specification" label="规格" width="180" show-overflow-tooltip>
-                        <template #default="{ row }">
-                            {{ row.specification || '-' }}
-                        </template>
-                    </el-table-column>
-                    
-                    <el-table-column prop="unit" label="单位" width="80" align="center">
-                        <template #default="{ row }">
-                            {{ row.unit || '-' }}
-                        </template>
-                    </el-table-column>
-                    
-                    <el-table-column label="当前库存" width="120" align="right">
-                        <template #default="{ row }">
-                            <span :class="getStockClass(row)">
-                                {{ formatStock(row.stock || 0) }}
-                            </span>
-                        </template>
-                    </el-table-column>
-                    
-                    <el-table-column label="最小库存" width="100" align="right">
-                        <template #default="{ row }">
-                            {{ formatStock(row.minStock || 0) }}
-                        </template>
-                    </el-table-column>
-                    
-                    <el-table-column label="状态" width="100" align="center">
-                        <template #default="{ row }">
-                            <el-tag :type="getStatusTagType(row.status)" size="small">
+        <md-elevated-card class="md3-card md3-table-card">
+        <div class="data-container" style="padding: 16px; overflow-x: auto;">
+            <table class="md3-table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>商品编码</th>
+                        <th>商品名称</th>
+                        <th>分类</th>
+                        <th>规格</th>
+                        <th>单位</th>
+                        <th>当前库存</th>
+                        <th>最小库存</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="loading">
+                        <td colspan="9" style="text-align: center; padding: 20px;">加载中...</td>
+                    </tr>
+                    <tr v-else-if="materials.length === 0">
+                        <td colspan="9" style="text-align: center; padding: 20px;">暂无数据</td>
+                    </tr>
+                    <tr v-else v-for="row in materials" :key="row.id || row.code">
+                        <td>{{ row.code || '-' }}</td>
+                        <td>{{ row.name || '-' }}</td>
+                        <td>{{ row.category || '-' }}</td>
+                        <td>{{ row.specification || '-' }}</td>
+                        <td>{{ row.unit || '-' }}</td>
+                        <td :class="getStockClass(row)" style="text-align: right;">{{ formatStock(row.stock || 0) }}</td>
+                        <td style="text-align: right;">{{ formatStock(row.minStock || 0) }}</td>
+                        <td style="text-align: center;">
+                            <span :class="['status-tag', 'status-' + getStatusTagType(row.status)]">
                                 {{ row.status }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-                    
-                    <el-table-column label="操作" width="180" fixed="right" align="center">
-                        <template #default="{ row }">
-                            <el-button 
-                                link 
-                                type="info" 
-                                size="small" 
-                                @click="handleDetails(row)">
-                                详情
-                            </el-button>
-                            <el-button 
-                                link 
-                                type="primary" 
-                                size="small" 
-                                @click="editMaterial(row)">
-                                编辑
-                            </el-button>
-                            <el-button 
-                                link 
-                                type="danger" 
-                                size="small" 
-                                @click="deleteMaterial(row)">
-                                删除
-                            </el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </div>
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <md-text-button @click="handleDetails(row)">详情</md-text-button>
+                            <md-text-button @click="editMaterial(row)">编辑</md-text-button>
+                            <md-text-button @click="deleteMaterial(row)" style="--md-sys-color-primary: var(--md-sys-color-error);">删除</md-text-button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
 
             <!-- 分页 -->
-            <div class="pagination">
-                <el-pagination background layout="total, sizes, prev, pager, next, jumper" 
-                    :current-page="currentPage" 
+            <div class="pagination" style="padding: 16px; display: flex; justify-content: center;">
+                <MdPagination
+                    :current-page="currentPage"
                     :page-size="pageSize"
-                    :page-sizes="[10, 20, 50, 100]"
-                    :total="totalItems" 
-                    @size-change="handleSizeChange"
-                    @current-change="handleCurrentChange" />
+                    :total="totalItems"
+                    @current-change="handleCurrentChange"
+                />
             </div>
         </div>
+        </md-elevated-card>
 
         <!-- 新增/编辑对话框 -->
-        <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" :close-on-click-modal="false">
-            <el-form :model="currentMaterial" label-width="120px" :rules="formRules" ref="materialForm">
-                <el-row :gutter="20">
-                    <el-col :span="12">
-                        <el-form-item label="商品编码" prop="code">
-                            <el-input v-model="currentMaterial.code" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="商品名称" prop="name">
-                            <el-input v-model="currentMaterial.name" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20">
-                    <el-col :span="12">
-                        <el-form-item label="分类" prop="category">
-                            <el-select v-model="currentMaterial.category" placeholder="请选择" style="width: 100%">
-                                <el-option v-for="item in categories" :key="item.value" :label="item.label"
-                                    :value="item.value" />
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="单位" prop="unit">
-                            <el-input v-model="currentMaterial.unit" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-form-item label="规格" prop="specification">
-                    <el-input v-model="currentMaterial.specification" />
-                </el-form-item>
-                <el-row :gutter="20">
-                    <el-col :span="12">
-                        <el-form-item label="最小库存" prop="minStock">
-                            <el-input-number v-model="currentMaterial.minStock" :min="0" :precision="2" 
-                                style="width: 100%" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="最大库存" prop="maxStock">
-                            <el-input-number v-model="currentMaterial.maxStock" :min="0" :precision="2" 
-                                style="width: 100%" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-form-item label="状态">
-                    <el-radio-group v-model="currentMaterial.status">
-                        <el-radio label="正常">正常</el-radio>
-                        <el-radio label="盘盈">盘盈</el-radio>
-                        <el-radio label="盘亏">盘亏</el-radio>
-                    </el-radio-group>
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <el-button @click="dialogVisible = false">取消</el-button>
-                <el-button type="primary" @click="submitForm" :loading="submitting">确定</el-button>
-            </template>
-        </el-dialog>
+        <md-dialog :open="dialogVisible" @closed="dialogVisible = false">
+            <div slot="headline">{{ dialogTitle }}</div>
+            <div slot="content" style="display: flex; flex-direction: column; gap: 16px; padding-top: 8px; width: 500px;">
+                <form id="materialForm" @submit.prevent="submitForm">
+                    <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 8px;">商品编码</label>
+                            <md-outlined-text-field :value="currentMaterial.code" @input="currentMaterial.code = $event.target.value" style="width: 100%" />
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 8px;">商品名称</label>
+                            <md-outlined-text-field :value="currentMaterial.name" @input="currentMaterial.name = $event.target.value" style="width: 100%" />
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 8px;">分类</label>
+                            <md-outlined-select :value="currentMaterial.category" @change="currentMaterial.category = $event.target.value" style="width: 100%">
+                                <md-select-option v-for="item in categories" :key="item.value" :value="item.value">
+                                    <div slot="headline">{{item.label}}</div>
+                                </md-select-option>
+                            </md-outlined-select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 8px;">单位</label>
+                            <md-outlined-text-field :value="currentMaterial.unit" @input="currentMaterial.unit = $event.target.value" style="width: 100%" />
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px;">规格</label>
+                        <md-outlined-text-field :value="currentMaterial.specification" @input="currentMaterial.specification = $event.target.value" style="width: 100%" />
+                    </div>
+                    <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 8px;">最小库存</label>
+                            <md-outlined-text-field type="number" :value="currentMaterial.minStock" @input="currentMaterial.minStock = $event.target.value" style="width: 100%" />
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 8px;">最大库存</label>
+                            <md-outlined-text-field type="number" :value="currentMaterial.maxStock" @input="currentMaterial.maxStock = $event.target.value" style="width: 100%" />
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px;">状态</label>
+                        <div style="display: flex; gap: 16px;">
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <md-radio name="status_group" value="正常" :checked="currentMaterial.status === '正常'" @change="currentMaterial.status = '正常'"></md-radio>
+                                正常
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <md-radio name="status_group" value="盘盈" :checked="currentMaterial.status === '盘盈'" @change="currentMaterial.status = '盘盈'"></md-radio>
+                                盘盈
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <md-radio name="status_group" value="盘亏" :checked="currentMaterial.status === '盘亏'" @change="currentMaterial.status = '盘亏'"></md-radio>
+                                盘亏
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div slot="actions">
+                <md-text-button @click="dialogVisible = false">取消</md-text-button>
+                <md-filled-button :disabled="submitting" @click="submitForm">确定</md-filled-button>
+            </div>
+        </md-dialog>
 
         <!-- 详情对话框 -->
-        <el-dialog v-model="detailDialogVisible" title="商品详情" width="800px">
-            <div v-if="materialDetail" class="detail-container">
-                <!-- 基本信息 -->
-                <div class="detail-section">
-                    <h3 class="section-title">基本信息</h3>
-                    <el-row :gutter="20" class="detail-row">
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">商品编码：</span>
-                                <span class="value">{{ materialDetail.data.code }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">商品名称：</span>
-                                <span class="value">{{ materialDetail.data.name }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">分类：</span>
-                                <span class="value">{{ materialDetail.data.category }}</span>
-                            </div>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" class="detail-row">
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">规格：</span>
-                                <span class="value">{{ materialDetail.data.specification || '-' }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">单位：</span>
-                                <span class="value">{{ materialDetail.data.unit }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">状态：</span>
-                                <el-tag :type="getStatusTagType(materialDetail.data.Status)" size="small">
-                                    {{ getStatusText(materialDetail.data.Status) }}
-                                </el-tag>
-                            </div>
-                        </el-col>
-                    </el-row>
-                </div>
+        <md-dialog :open="detailDialogVisible" @closed="detailDialogVisible = false">
+            <div slot="headline">商品详情</div>
+            <div slot="content" style="padding-top: 8px; width: 600px;">
+                <div v-if="materialDetail" class="detail-container">
+                    <div class="detail-section">
+                        <h3 class="section-title">基本信息</h3>
+                        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+                            <div style="flex: 1;">商品编码：{{ materialDetail.data.code }}</div>
+                            <div style="flex: 1;">商品名称：{{ materialDetail.data.name }}</div>
+                            <div style="flex: 1;">分类：{{ materialDetail.data.category }}</div>
+                        </div>
+                        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+                            <div style="flex: 1;">规格：{{ materialDetail.data.specification || '-' }}</div>
+                            <div style="flex: 1;">单位：{{ materialDetail.data.unit }}</div>
+                            <div style="flex: 1;">状态：{{ getStatusText(materialDetail.data.Status) }}</div>
+                        </div>
+                    </div>
 
-                <!-- 库存信息 -->
-                <div class="detail-section">
-                    <h3 class="section-title">库存信息</h3>
-                    <el-row :gutter="20" class="detail-row">
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">当前库存：</span>
-                                <span class="value stock-highlight">{{ formatStock(materialDetail.data.totalStock || 0) }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">最小库存：</span>
-                                <span class="value">{{ formatStock(materialDetail.data.MinStock || 0) }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">最大库存：</span>
-                                <span class="value">{{ formatStock(materialDetail.data.MaxStock || 0) }}</span>
-                            </div>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" class="detail-row">
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">可用数量：</span>
-                                <span class="value">{{ formatStock(materialDetail.data.totalAvailable || materialDetail.data.stock || 0) }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">预留数量：</span>
-                                <span class="value">{{ formatStock(materialDetail.data.totalReserved || 0) }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">库存状态：</span>
-                                <el-tag :type="getStockStatusType(materialDetail.data)" size="small">
-                                    {{ getStockStatusText(materialDetail.data) }}
-                                </el-tag>
-                            </div>
-                        </el-col>
-                    </el-row> 
-                    <!-- <el-row :gutter="20" class="detail-row">
-                        <el-col :span="8">
-                            <div class="detail-item">
-                                <span class="label">库位：</span>
-                                <span class="value">{{locationNames().join(', ') || '-' }}</span>
-                            </div>
-                        </el-col>
-                    </el-row>                             -->
-                </div>
+                    <div class="detail-section">
+                        <h3 class="section-title">库存信息</h3>
+                        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+                            <div style="flex: 1;">当前库存：<span class="stock-highlight">{{ formatStock(materialDetail.data.totalStock || 0) }}</span></div>
+                            <div style="flex: 1;">最小库存：{{ formatStock(materialDetail.data.MinStock || 0) }}</div>
+                            <div style="flex: 1;">最大库存：{{ formatStock(materialDetail.data.MaxStock || 0) }}</div>
+                        </div>
+                        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+                            <div style="flex: 1;">可用数量：{{ formatStock(materialDetail.data.totalAvailable || materialDetail.data.stock || 0) }}</div>
+                            <div style="flex: 1;">预留数量：{{ formatStock(materialDetail.data.totalReserved || 0) }}</div>
+                            <div style="flex: 1;">库存状态：{{ getStockStatusText(materialDetail.data) }}</div>
+                        </div>
+                    </div>
 
-                <!-- 库位分布 -->
-                <div class="detail-section" v-if="materialDetail.data.inventoryDetails && materialDetail.data.inventoryDetails.length > 0">
-                    <h3 class="section-title">库位分布</h3>
-                    <el-table :data="materialDetail.data.inventoryDetails" border size="small" max-height="300">
-                        <el-table-column prop="locationId" label="库位编码" width="180" >
-                            <template #default="{ row }">
-                                {{ row.LocationID || '-' }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="locationName" label="库位名称" width="150" >
-                            <template #default="{ row }">
-                                {{ row.LocationName || '-' }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="batchNumber" label="批次号" width="120" >
-                            <template #default="{ row }">
-                                {{ row.BatchNumber || '-' }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="currentQuantity" label="库存数量" width="100" align="right">
-                            <template #default="{ row }">
-                                {{ formatStock(row.CurrentQuantity || 0) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="availableQuantity" label="可用数量" width="100" align="right">
-                            <template #default="{ row }">
-                                {{ formatStock(row.AvailableQuantity || 0) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="productionDate" label="生产日期" width="100">
-                            <template #default="{ row }">
-                                {{ row.ProductionDate || '-' }}
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                </div>
-
-                <!-- 时间信息 -->
-                <div class="detail-section">
-                    <h3 class="section-title">时间信息</h3>
-                    <el-row :gutter="20" class="detail-row">
-                        <el-col :span="12">
-                            <div class="detail-item">
-                                <span class="label">创建时间：</span>
-                                <span class="value">{{ formatDateTime(materialDetail.data.CreatedAt) }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="12">
-                            <div class="detail-item">
-                                <span class="label">更新时间：</span>
-                                <span class="value">{{ formatDateTime(materialDetail.data.UpdatedAt) }}</span>
-                            </div>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="20" class="detail-row">
-                        <el-col :span="12">
-                            <div class="detail-item">
-                                <span class="label">最后入库时间：</span>
-                                <span class="value">{{ formatDateTime(materialDetail.data.inventoryDetails[0].LastInboundDate) || '-' }}</span>
-                            </div>
-                        </el-col>
-                        <el-col :span="12">
-                            <div class="detail-item">
-                                <span class="label">最后出库时间：</span>
-                                <span class="value">{{ formatDateTime(materialDetail.data.inventoryDetails[0].LastOutboundDate) || '-' }}</span>
-                            </div>
-                        </el-col>
-                    </el-row>
+                    <div class="detail-section" v-if="materialDetail.data.inventoryDetails && materialDetail.data.inventoryDetails.length > 0">
+                        <h3 class="section-title">库位分布</h3>
+                        <table class="md3-table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>库位编码</th>
+                                    <th>库位名称</th>
+                                    <th>批次号</th>
+                                    <th>库存数量</th>
+                                    <th>可用数量</th>
+                                    <th>生产日期</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="row in materialDetail.data.inventoryDetails" :key="row.LocationID">
+                                    <td>{{ row.LocationID || '-' }}</td>
+                                    <td>{{ row.LocationName || '-' }}</td>
+                                    <td>{{ row.BatchNumber || '-' }}</td>
+                                    <td style="text-align: right;">{{ formatStock(row.CurrentQuantity || 0) }}</td>
+                                    <td style="text-align: right;">{{ formatStock(row.AvailableQuantity || 0) }}</td>
+                                    <td>{{ row.ProductionDate || '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            <template #footer>
-                <el-button @click="detailDialogVisible = false">关闭</el-button>
-                <el-button type="primary" @click="editMaterial(materialDetail)">编辑</el-button>
-            </template>
-        </el-dialog>
+            <div slot="actions">
+                <md-text-button @click="detailDialogVisible = false">关闭</md-text-button>
+                <md-filled-button @click="editMaterial(materialDetail)">编辑</md-filled-button>
+            </div>
+        </md-dialog>
     </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { ElMessage } from 'element-plus'
+import { notifySuccess, notifyError } from '@/utils/notify'
+import MdPagination from '@/components/MdPagination.vue'
 import api from '@/api'
 
 // 响应式数据
@@ -440,25 +292,6 @@ const statusOptions = [
     { value: '盘亏', label: '盘亏' }
 ]
 
-// 表单验证规则
-const formRules = {
-    code: [
-        { required: true, message: '请输入商品编码', trigger: 'blur' },
-        { pattern: /^[A-Z0-9]{3,20}$/, message: '商品编码格式不正确', trigger: 'blur' }
-    ],
-    name: [
-        { required: true, message: '请输入商品名称', trigger: 'blur' },
-        { min: 2, max: 100, message: '商品名称长度在2到100个字符', trigger: 'blur' }
-    ],
-    category: [{ required: true, message: '请选择分类', trigger: 'change' }],
-    unit: [
-        { required: true, message: '请输入单位', trigger: 'blur' },
-        { max: 10, message: '单位长度不能超过10个字符', trigger: 'blur' }
-    ],
-    minStock: [{ type: 'number', min: 0, message: '最小库存不能小于0', trigger: 'blur' }],
-    maxStock: [{ type: 'number', min: 0, message: '最大库存不能小于0', trigger: 'blur' }]
-}
-
 // 计算属性
 const filteredMaterials = computed(() => {
     return materials.value
@@ -497,7 +330,7 @@ const fetchMaterials = async () => {
         totalItems.value = response.data?.total || response.data?.count || materials.value.length || 0
     } catch (error) {
         console.error('获取商品库存列表失败:', error)
-        ElMessage.error('获取商品库存列表失败')
+        notifyError('获取商品库存列表失败')
         materials.value = []
         totalItems.value = 0
     } finally {
@@ -533,10 +366,6 @@ const handleSizeChange = (val) => {
     pageSize.value = val
     currentPage.value = 1
     fetchMaterials()
-}
-
-const handleSelectionChange = (val) => {
-    selectedMaterials.value = val
 }
 
 const getStatusTagType = (status) => {
@@ -598,33 +427,27 @@ const handleDetails = async (row) => {
         
         const materialId = row.ItemID || row.id
         if (!materialId) {
-            ElMessage.error('无法获取商品ID')
+            notifyError('无法获取商品ID')
             return
         }
         
-        const response = await getRawMaterialInventoryDetail(materialId)
+        const response = await api.getRawMaterialInventoryDetail(materialId)
         console.log('详情响应:', response)
         
         if (response && response.data) {
             materialDetail.value = response.data
             detailDialogVisible.value = true
         } else {
-            ElMessage.error('获取商品详情失败')
+            notifyError('获取商品详情失败')
         }
     } catch (error) {
         console.error('获取商品详情失败:', error)
-        ElMessage.error(error.response?.data?.message || error.message || '获取商品详情失败')
+        notifyError(error.response?.data?.message || error.message || '获取商品详情失败')
     } finally {
         loading.value = false
     }
 }
 
-// const editMaterial = (row) => {
-//     dialogTitle.value = '编辑商品'
-//     currentMaterial.value = { ...row }
-//     detailDialogVisible.value = false
-//     dialogVisible.value = true
-// }
 const editMaterial = (row) => {
     dialogTitle.value = '编辑商品'
     
@@ -645,51 +468,21 @@ const editMaterial = (row) => {
     dialogVisible.value = true
 }
 
-// const deleteMaterial = (row) => {
-//     const materialId = row.ItemID || row.id
-//     const materialName = row.ItemName || row.name || '该商品'
-    
-//     ElMessageBox.confirm(
-//         `确认删除商品"${materialName}"吗？删除后不可恢复！`, 
-//         '删除确认', 
-//         {
-//             confirmButtonText: '确定删除',
-//             cancelButtonText: '取消',
-//             type: 'warning',
-//             dangerouslyUseHTMLString: true
-//         }
-//     ).then(async () => {
-//         try {
-//             loading.value = true
-//             await deleteRawMaterial(materialId)
-//             ElMessage.success('删除成功')
-//             fetchMaterials()
-//         } catch (error) {
-//             console.error('删除商品失败:', error)
-//             ElMessage.error(error.response?.data?.message || error.message || '删除商品失败')
-//         } finally {
-//             loading.value = false
-//         }
-//     }).catch(() => {
-//         ElMessage.info('已取消删除')
-//     })
-// }
 const deleteMaterial = async (row) => {
     const materialId = row.ItemID || row.id
     const materialName = row.ItemName || row.name || '该商品'
     
-    // 使用浏览器原生确认框
     const confirmed = confirm(`确认删除商品"${materialName}"吗？删除后不可恢复！`)
     
     if (confirmed) {
         try {
             loading.value = true
-            await deleteRawMaterial(materialId)
-            ElMessage.success('删除成功')
+            await api.deleteRawMaterial(materialId)
+            notifySuccess('删除成功')
             fetchMaterials()
         } catch (error) {
             console.error('删除商品失败:', error)
-            ElMessage.error(error.response?.data?.message || error.message || '删除商品失败')
+            notifyError(error.response?.data?.message || error.message || '删除商品失败')
         } finally {
             loading.value = false
         }
@@ -697,32 +490,31 @@ const deleteMaterial = async (row) => {
 }
 
 const exportData = () => {
-    ElMessage.success('导出功能开发中')
+    notifySuccess('导出功能开发中')
 }
 
 const submitForm = async () => {
     // 验证表单
     try {
         if (!currentMaterial.value.code) {
-            ElMessage.error('请输入商品编码')
+            notifyError('请输入商品编码')
             return
         }
         if (!currentMaterial.value.name) {
-            ElMessage.error('请输入商品名称')
+            notifyError('请输入商品名称')
             return
         }
         if (!currentMaterial.value.category) {
-            ElMessage.error('请选择分类')
+            notifyError('请选择分类')
             return
         }
         if (!currentMaterial.value.unit) {
-            ElMessage.error('请输入单位')
+            notifyError('请输入单位')
             return
         }
 
-        // 验证最大库存不能小于最小库存
         if (currentMaterial.value.maxStock > 0 && currentMaterial.value.minStock > currentMaterial.value.maxStock) {
-            ElMessage.error('最大库存不能小于最小库存')
+            notifyError('最大库存不能小于最小库存')
             return
         }
 
@@ -740,13 +532,11 @@ const submitForm = async () => {
         }
 
         if (currentMaterial.value.id) {
-            // 更新
-            await updateRawMaterial(currentMaterial.value.id, materialData)
-            ElMessage.success('更新成功')
+            await api.updateRawMaterial(currentMaterial.value.id, materialData)
+            notifySuccess('更新成功')
         } else {
-            // 新增
-            await addRawMaterial(materialData)
-            ElMessage.success('新增成功')
+            await api.addRawMaterial(materialData)
+            notifySuccess('新增成功')
         }
 
         dialogVisible.value = false
@@ -754,9 +544,9 @@ const submitForm = async () => {
     } catch (error) {
         console.error('提交表单失败:', error)
         if (error.response && error.response.data && error.response.data.message) {
-            ElMessage.error(error.response.data.message)
+            notifyError(error.response.data.message)
         } else {
-            ElMessage.error(error.message || '操作失败')
+            notifyError(error.message || '操作失败')
         }
     } finally {
         submitting.value = false
@@ -779,29 +569,12 @@ const formatDateTime = (dateTimeStr) => {
 }
 
 const locationNames = () => {
-    return materialDetail.data.inventoryDetails.map(item => item.LocationName);
+    return materialDetail.value.data.inventoryDetails.map(item => item.LocationName);
 }
 
 </script>
 
 <style scoped lang="scss">
-.erp-container {
-    display: flex;
-    flex-direction: column;
-    font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-    background-color: #f0f2f5;
-    padding: 16px;
-    height: 100%;
-}
-
-.filter-card {
-    background: white;
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-}
-
 .filter-row {
     display: flex;
     gap: 16px;
@@ -821,10 +594,6 @@ const locationNames = () => {
         font-size: 14px;
         white-space: nowrap;
     }
-
-    .el-select {
-        width: 100%;
-    }
 }
 
 .filter-actions {
@@ -834,205 +603,66 @@ const locationNames = () => {
     justify-content: flex-end;
 }
 
-.btn-reset {
-    background: #f5f7fa;
-    border-color: #e4e7ed;
-    color: #666;
-}
-
-.btn-primary {
-    background: #409eff;
-    border-color: #409eff;
-    transition: all 0.3s;
-
-    &:hover {
-        background: #66b1ff;
-    }
-}
-
 .action-bar {
     display: flex;
-    gap: 12px;
-    padding: 0 24px;
-    margin-bottom: 16px;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.action-btn {
-    flex: 1;
-    height: 44px;
-    border-radius: 4px;
-    font-weight: 500;
+.action-buttons {
     display: flex;
     align-items: center;
-    justify-content: center;
-
-    i {
-        margin-right: 6px;
-        font-size: 18px;
-    }
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 .data-container {
     flex: 1;
     overflow: hidden;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-
-    .table-wrapper {
-        padding: 16px;
-        height: 90%;
-        
-        .el-table {
-            border-radius: 4px;
-            overflow: hidden;
-            
-            .el-table__header {
-                th {
-                    background-color: #fafafa;
-                    color: #303133;
-                    font-weight: 600;
-                    border-bottom: 1px solid #ebeef5;
-                }
-            }
-            
-            .el-table__body {
-                tr {
-                    &:hover {
-                        background-color: #f5f7fa;
-                    }
-                    
-                    td {
-                        border-bottom: 1px solid #ebeef5;
-                        padding: 12px 0;
-                        
-                        .cell {
-                            padding: 0 10px;
-                            word-break: break-all;
-                        }
-                    }
-                }
-            }
-
-            .low-stock {
-                color: #f56c6c;
-                font-weight: bold;
-            }
-
-            .stock-highlight {
-                font-weight: 600;
-                color: #409eff;
-            }
-            
-            .el-button {
-                margin: 0 2px;
-                
-                &.is-link {
-                    padding: 0;
-                    height: auto;
-                    line-height: normal;
-                }
-            }
-        }
-    }
 }
 
-.pagination {
-    padding: 16px 0;
-    display: flex;
-    justify-content: center;
-    background: white;
-}
-
-// 详情对话框样式
-.detail-container {
-    .detail-section {
-        margin-bottom: 24px;
-        
-        .section-title {
-            margin: 0 0 16px 0;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e4e7ed;
-            font-size: 16px;
-            font-weight: 600;
-            color: #303133;
-        }
-        
-        .detail-row {
-            margin-bottom: 16px;
-            
-            &:last-child {
-                margin-bottom: 0;
-            }
-        }
-        
-        .detail-item {
-            display: flex;
-            align-items: center;
-            min-height: 32px;
-            
-            .label {
-                font-weight: 500;
-                color: #606266;
-                margin-right: 8px;
-                min-width: 80px;
-                flex-shrink: 0;
-            }
-            
-            .value {
-                color: #303133;
-                flex: 1;
-                word-break: break-all;
-                
-                &.stock-highlight {
-                    font-weight: 600;
-                    font-size: 16px;
-                    color: #409eff;
-                }
-            }
-        }
-    }
-}
-
-// 对话框表单样式
-.el-dialog {
-    border-radius: 8px;
-
-    .el-dialog__header {
-        border-bottom: 1px solid #e4e7ed;
-        margin-right: 0;
-        padding: 20px 20px 15px;
-    }
-
-    .el-dialog__body {
-        padding: 20px;
-    }
-
-    .el-dialog__footer {
-        border-top: 1px solid #e4e7ed;
-        padding: 15px 20px 20px;
-    }
-}
-
-.el-form {
-    .el-row {
-        margin-bottom: 16px;
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-    }
-
-    .el-input-number {
-        width: 100%;
-    }
+.detail-section {
+    margin-bottom: 24px;
     
-    .el-form-item {
-        margin-bottom: 18px;
+    .section-title {
+        margin: 0 0 16px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e4e7ed;
+        font-size: 16px;
+        font-weight: 600;
+        color: #303133;
     }
 }
 
-// 响应式设计
+.low-stock {
+    color: #f56c6c;
+    font-weight: bold;
+}
+
+.stock-highlight {
+    font-weight: 600;
+    color: #409eff;
+}
+
+.status-tag {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.status-success {
+    background: #e1f3d8;
+    color: #67c23a;
+}
+.status-danger {
+    background: #fde2e2;
+    color: #f56c6c;
+}
+.status-info {
+    background: #f4f4f5;
+    color: #909399;
+}
+
 @media (max-width: 768px) {
     .filter-row {
         flex-direction: column;
@@ -1041,101 +671,6 @@ const locationNames = () => {
     
     .action-bar {
         flex-direction: column;
-        
-        .action-btn {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-    }
-    
-    .el-dialog {
-        width: 95% !important;
-        margin: 5vh auto;
-    }
-    
-    .detail-row {
-        .el-col {
-            margin-bottom: 12px;
-        }
-    }
-}
-
-// 表格样式优化
-.el-table {
-    .el-table__header {
-        th {
-            background-color: #fafafa;
-            color: #303133;
-            font-weight: 600;
-        }
-    }
-    
-    .el-table__body {
-        tr:hover {
-            background-color: #f5f7fa;
-        }
-    }
-}
-
-// 标签样式
-.el-tag {
-    border-radius: 4px;
-    font-weight: 500;
-}
-
-// 按钮加载状态
-.el-button.is-loading {
-    position: relative;
-    pointer-events: none;
-    
-    &:before {
-        pointer-events: none;
-        content: '';
-        position: absolute;
-        left: -1px;
-        top: -1px;
-        right: -1px;
-        bottom: -1px;
-        border-radius: inherit;
-        background-color: hsla(0,0%,100%,.35);
-    }
-}
-
-// 输入框焦点状态
-.el-input__inner:focus,
-.el-textarea__inner:focus,
-.el-select .el-input.is-focus .el-input__inner {
-    border-color: #409eff;
-    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-}
-
-// 危险操作样式
-.el-message-box.el-message-box--warning {
-    .el-message-box__content {
-        color: #e6a23c;
-    }
-}
-
-// 分页器样式优化
-.el-pagination {
-    .el-pagination__total {
-        color: #606266;
-        font-weight: 500;
-    }
-    
-    .btn-next,
-    .btn-prev {
-        border-radius: 4px;
-    }
-    
-    .el-pager li {
-        border-radius: 4px;
-        margin: 0 2px;
-        
-        &.active {
-            background-color: #409eff;
-            color: white;
-        }
     }
 }
 </style>

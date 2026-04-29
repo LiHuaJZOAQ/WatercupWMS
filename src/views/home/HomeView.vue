@@ -1,25 +1,20 @@
 <template>
-  <div class="common-layout">
-    <el-container>
-      <el-aside width="200px">
-        <NavigationView @onChangeView="changeView" />
-      </el-aside>
-      <el-container>
-        <el-header>
-          <TopView />
-        </el-header>
-        <el-main>
-          <!-- <KeepAlive>
-              <component :is="counter.currentView" />
-            </KeepAlive> -->
-          <router-view v-slot="{ Component }">
-            <keep-alive>
-              <component :is="Component" />
-            </keep-alive>
-          </router-view>
-        </el-main>
-      </el-container>
-    </el-container>
+  <div class="md3-layout">
+    <div class="md3-aside">
+      <NavigationView @onChangeView="changeView" />
+    </div>
+    <div class="md3-content">
+      <header class="md3-header">
+        <TopView />
+      </header>
+      <main class="md3-main">
+        <router-view v-slot="{ Component }">
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
+        </router-view>
+      </main>
+    </div>
   </div>
 </template>
 
@@ -58,25 +53,44 @@ const changeView = (view: string) => {
 
 </script>
 <style scoped lang="scss">
-.common-layout {
+.md3-layout {
+  display: flex;
   height: 100vh;
   width: 100vw;
+  background-color: var(--md-sys-color-background, #fdfdfd);
+  color: var(--md-sys-color-on-background, #1a1c1e);
+  overflow: hidden;
+}
 
-  .el-container {
-    height: 100vh;
+.md3-aside {
+  width: 280px;
+  background-color: var(--md-sys-color-surface-container, #f2f3f5);
+  border-right: 1px solid var(--md-sys-color-outline-variant, #c2c7cf);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
 
-    .el-aside {
-      background-color: #f5f5f5;
-    }
+.md3-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-    .el-header {
-      background-color: #f5f7fa;
-      color: #fff;
-    }
+.md3-header {
+  height: 64px;
+  background-color: var(--md-sys-color-surface, #fdfdfd);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant, #c2c7cf);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
 
-    .el-main {
-      background-color: #fff;
-    }
-  }
+.md3-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background-color: var(--md-sys-color-background, #fdfdfd);
 }
 </style>

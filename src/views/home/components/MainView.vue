@@ -1,201 +1,190 @@
 <template>
-  <div class="dashboard-container">
-    <!-- 顶部状态栏 -->
-    <div class="status-bar">
-      <div class="status-item" v-for="(item, index) in statusItems" :key="index" :class="item.type">
-        <div class="value">{{ item.value }}</div>
-        <div class="label">{{ item.label }}</div>
-        <div class="icon">{{ item.icon }}</div>
-      </div>
+  <div class="md3-dashboard">
+    <div class="md3-status-grid">
+      <md-elevated-card v-for="(item, index) in statusItems" :key="index" class="md3-status-card" :class="item.type">
+        <div class="md3-status-body">
+          <div class="md3-status-top">
+            <div class="md3-status-label">{{ item.label }}</div>
+            <div class="md3-status-icon" aria-hidden="true">{{ item.icon }}</div>
+          </div>
+          <div class="md3-status-value">{{ item.value }}</div>
+        </div>
+      </md-elevated-card>
     </div>
 
-    <!-- 入库/出库切换 -->
-    <div class="tabs">
-      <div class="tab" :class="{ active: activeTab === 'inbound' }" @click="activeTab = 'inbound'">
-        入库管理
-      </div>
-      <div class="tab" :class="{ active: activeTab === 'outbound' }" @click="activeTab = 'outbound'">
-        出库管理
-      </div>
-      <div class="tab" :class="{ active: activeTab === 'inventory' }" @click="activeTab = 'inventory'">
-        库存监控
-      </div>
-    </div>
+    <md-elevated-card class="md3-tabs-card">
+      <md-tabs>
+        <md-primary-tab :active="activeTab === 'inbound'" @click="activeTab = 'inbound'">
+          <md-icon slot="icon">arrow_downward</md-icon>
+          入库管理
+        </md-primary-tab>
+        <md-primary-tab :active="activeTab === 'outbound'" @click="activeTab = 'outbound'">
+          <md-icon slot="icon">arrow_upward</md-icon>
+          出库管理
+        </md-primary-tab>
+        <md-primary-tab :active="activeTab === 'inventory'" @click="activeTab = 'inventory'">
+          <md-icon slot="icon">inventory</md-icon>
+          库存监控
+        </md-primary-tab>
+      </md-tabs>
+    </md-elevated-card>
 
-    <!-- 主要数据卡片 -->
-    <div class="cards">
-      <div class="card" v-for="(card, index) in currentCards" :key="index" :class="card.status">
-        <div class="card-header">
-          <div class="card-value">
+    <div class="md3-cards-grid">
+      <md-elevated-card v-for="(card, index) in currentCards" :key="index" class="md3-kpi-card" :class="card.status">
+        <div class="md3-kpi-head">
+          <div class="md3-kpi-value">
             {{ card.value }}
-            <span v-if="card.trend" class="trend" :class="card.trend">
+            <span v-if="card.trend" class="md3-kpi-trend" :class="card.trend">
               {{ card.trend === 'up' ? '↗' : '↓' }}
             </span>
           </div>
-          <div class="card-percentage" v-if="card.percentage">{{ card.percentage }}</div>
+          <div v-if="card.percentage" class="md3-kpi-chip">{{ card.percentage }}</div>
         </div>
-        <div class="card-label">{{ card.label }}</div>
-        <div class="detail" @click="viewDetails(card.type)">查看详情 ></div>
-      </div>
+        <div class="md3-kpi-label">{{ card.label }}</div>
+        <div class="md3-kpi-actions">
+          <md-text-button @click="viewDetails(card.type)">查看详情</md-text-button>
+        </div>
+      </md-elevated-card>
     </div>
 
     <!-- 图表区域 -->
-    <div class="charts-container">
-      <!-- 库存预警趋势图 -->
-      <div class="chart-panel large">
-        <div class="panel-header">
-          <h3>库存预警趋势</h3>
-          <div class="chart-filters">
-            <select v-model="chartTimeRange" @change="updateWarningChart">
-              <option value="7">最近7天</option>
-              <option value="30">最近30天</option>
-              <option value="90">最近90天</option>
-            </select>
+    <div class="md3-charts-grid">
+      <md-elevated-card class="md3-panel md3-panel--large">
+        <div class="md3-panel-header">
+          <div class="md3-panel-title">
+            <md-icon aria-hidden="true">show_chart</md-icon>
+            库存预警趋势
           </div>
+          <md-outlined-select
+            class="md3-select"
+            label="时间范围"
+            :value="chartTimeRange"
+            @change="(e) => { chartTimeRange = e.target.value; updateWarningChart() }"
+          >
+            <md-select-option value="7"><div slot="headline">最近7天</div></md-select-option>
+            <md-select-option value="30"><div slot="headline">最近30天</div></md-select-option>
+            <md-select-option value="90"><div slot="headline">最近90天</div></md-select-option>
+          </md-outlined-select>
         </div>
-        <div id="warningChart" style="height: 300px"></div>
-      </div>
+        <div id="warningChart" class="md3-chart"></div>
+      </md-elevated-card>
 
-      <!-- 实时库存监控 -->
-      <div class="chart-panel medium">
-        <div class="panel-header">
-          <h3>实时库存监控</h3>
-          <div class="refresh-indicator" :class="{ active: isRefreshing }">
-            <span class="refresh-dot"></span>
+      <md-elevated-card class="md3-panel md3-panel--medium">
+        <div class="md3-panel-header">
+          <div class="md3-panel-title">
+            <md-icon aria-hidden="true">monitoring</md-icon>
+            实时库存监控
+          </div>
+          <div class="md3-live-indicator" :data-active="isRefreshing">
+            <span class="md3-live-dot"></span>
             实时更新
           </div>
         </div>
-        <div class="inventory-monitor">
-          <div class="monitor-item" v-for="item in inventoryMonitor" :key="item.id" :class="item.status">
-            <div class="item-info">
-              <div class="item-name">{{ item.name }}</div>
-              <div class="item-location">{{ item.location }}</div>
+        <div class="md3-monitor-list">
+          <div class="md3-monitor-item" v-for="item in inventoryMonitor" :key="item.id" :data-status="item.status">
+            <div class="md3-monitor-main">
+              <div class="md3-monitor-name">{{ item.name }}</div>
+              <div class="md3-monitor-sub">{{ item.location }}</div>
             </div>
-            <div class="item-quantity">
-              <div class="current">{{ item.current }}</div>
-              <div class="unit">{{ item.unit }}</div>
+            <div class="md3-monitor-qty">
+              <div class="md3-monitor-num">{{ item.current }}</div>
+              <div class="md3-monitor-unit">{{ item.unit }}</div>
             </div>
-            <div class="item-status">
-              <div class="status-bar-mini">
-                <div class="fill" :style="{ width: item.percentage + '%' }"></div>
+            <div class="md3-monitor-meter">
+              <div class="md3-meter-track">
+                <div class="md3-meter-fill" :style="{ width: item.percentage + '%' }"></div>
               </div>
-              <div class="percentage">{{ item.percentage }}%</div>
+              <div class="md3-meter-pct">{{ item.percentage }}%</div>
             </div>
           </div>
         </div>
-      </div>
+      </md-elevated-card>
     </div>
 
     <!-- 底部详细信息区域 -->
-    <div class="bottom-section">
-      <!-- 库位分布热力图 -->
-      <div class="chart-panel">
-        <div class="panel-header">
-          <h3>库位分布热力图</h3>
-          <div class="warehouse-selector">
-            <button 
-              v-for="warehouse in warehouses" 
+    <div class="md3-bottom-grid">
+      <md-elevated-card class="md3-panel">
+        <div class="md3-panel-header">
+          <div class="md3-panel-title">
+            <md-icon aria-hidden="true">grid_on</md-icon>
+            库位分布热力图
+          </div>
+          <div class="md3-chip-row">
+            <md-filter-chip
+              v-for="warehouse in warehouses"
               :key="warehouse.id"
-              :class="{ active: selectedWarehouse === warehouse.id }"
+              :selected="selectedWarehouse === warehouse.id"
               @click="selectedWarehouse = warehouse.id"
             >
               {{ warehouse.name }}
-            </button>
+            </md-filter-chip>
           </div>
         </div>
-        <div class="warehouse-heatmap">
-          <div class="warehouse-layout">
-            <div 
-              v-for="location in warehouseLayout" 
+        <div class="md3-heatmap">
+          <div class="md3-warehouse-layout">
+            <div
+              v-for="location in warehouseLayout"
               :key="location.id"
-              class="location-cell"
-              :class="[location.type, location.status]"
+              class="md3-location-cell"
+              :data-status="location.status"
               :title="`${location.name} - 占用率: ${location.occupancy}%`"
             >
-              <div class="location-label">{{ location.code }}</div>
-              <div class="occupancy-indicator" :style="{ height: location.occupancy + '%' }"></div>
+              <div class="md3-location-code">{{ location.code }}</div>
+              <div class="md3-location-fill" :style="{ height: location.occupancy + '%' }"></div>
             </div>
           </div>
-          <div class="heatmap-legend">
-            <div class="legend-item">
-              <span class="color empty"></span>
-              <span>空闲</span>
-            </div>
-            <div class="legend-item">
-              <span class="color low"></span>
-              <span>低占用</span>
-            </div>
-            <div class="legend-item">
-              <span class="color medium"></span>
-              <span>中等占用</span>
-            </div>
-            <div class="legend-item">
-              <span class="color high"></span>
-              <span>高占用</span>
-            </div>
-            <div class="legend-item">
-              <span class="color full"></span>
-              <span>满载</span>
-            </div>
+          <div class="md3-legend">
+            <div class="md3-legend-item"><span class="md3-legend-dot" data-level="empty"></span>空闲</div>
+            <div class="md3-legend-item"><span class="md3-legend-dot" data-level="low"></span>低占用</div>
+            <div class="md3-legend-item"><span class="md3-legend-dot" data-level="medium"></span>中等占用</div>
+            <div class="md3-legend-item"><span class="md3-legend-dot" data-level="high"></span>高占用</div>
+            <div class="md3-legend-item"><span class="md3-legend-dot" data-level="full"></span>满载</div>
           </div>
         </div>
-      </div>
+      </md-elevated-card>
 
-      <!-- 预警通知面板 -->
-      <div class="alert-panel">
-        <div class="panel-header">
-          <h3>预警通知</h3>
-          <div class="alert-count">{{ alertNotifications.length }} 条预警</div>
+      <md-elevated-card class="md3-panel">
+        <div class="md3-panel-header">
+          <div class="md3-panel-title">
+            <md-icon aria-hidden="true">warning</md-icon>
+            预警通知
+          </div>
+          <div class="md3-alert-count">{{ alertNotifications.length }} 条预警</div>
         </div>
-        <div class="alert-list">
-          <div 
-            v-for="alert in alertNotifications" 
-            :key="alert.id"
-            class="alert-item"
-            :class="alert.level"
-          >
-            <div class="alert-icon">⚠</div>
-            <div class="alert-content">
-              <div class="alert-title">{{ alert.title }}</div>
-              <div class="alert-description">{{ alert.description }}</div>
-              <div class="alert-time">{{ alert.time }}</div>
+        <div class="md3-alert-list">
+          <div v-for="alert in alertNotifications" :key="alert.id" class="md3-alert-item" :data-level="alert.level">
+            <div class="md3-alert-main">
+              <div class="md3-alert-title">{{ alert.title }}</div>
+              <div class="md3-alert-desc">{{ alert.description }}</div>
+              <div class="md3-alert-time">{{ alert.time }}</div>
             </div>
-            <div class="alert-action">
-              <button @click="handleAlert(alert.id)">处理</button>
-            </div>
+            <md-text-button @click="handleAlert(alert.id)">处理</md-text-button>
           </div>
         </div>
-      </div>
+      </md-elevated-card>
     </div>
 
-    <!-- 预警弹窗 -->
-    <div v-if="showAlertModal" class="alert-modal" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>⚠ 库存预警</h3>
-          <button class="close-btn" @click="closeModal">×</button>
-        </div>
-        <div class="modal-body">
-          <p>{{ currentAlert.message }}</p>
-          <div class="alert-details">
-            <div>物料名称: {{ currentAlert.itemName }}</div>
-            <div>当前库存: {{ currentAlert.currentStock }}</div>
-            <div>最小库存: {{ currentAlert.minStock }}</div>
-            <div>建议补货量: {{ currentAlert.suggestedOrder }}</div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button @click="closeModal">关闭</button>
-          <button class="primary" @click="createPurchaseOrder">生成采购订单</button>
+    <md-dialog :open="showAlertModal" @close="closeModal">
+      <div slot="headline">库存预警</div>
+      <div slot="content" class="md3-dialog-content">
+        <div class="md3-dialog-message">{{ currentAlert.message }}</div>
+        <div class="md3-dialog-kv">
+          <div class="md3-kv-row"><span>物料名称</span><span>{{ currentAlert.itemName }}</span></div>
+          <div class="md3-kv-row"><span>当前库存</span><span>{{ currentAlert.currentStock }}</span></div>
+          <div class="md3-kv-row"><span>最小库存</span><span>{{ currentAlert.minStock }}</span></div>
+          <div class="md3-kv-row"><span>建议补货量</span><span>{{ currentAlert.suggestedOrder }}</span></div>
         </div>
       </div>
-    </div>
+      <div slot="actions">
+        <md-text-button @click="closeModal">关闭</md-text-button>
+        <md-filled-button @click="createPurchaseOrder">生成采购订单</md-filled-button>
+      </div>
+    </md-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
-import { ArrowUp, ArrowDown, Wallet, Box, Connection, User, Clock, Check, List, Money } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { useRouter } from 'vue-router'
 import api from '@/api'
@@ -387,749 +376,507 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-.dashboard-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 20px;
-  font-family: 'Microsoft YaHei', Arial, sans-serif;
-}
-
-/* 状态栏样式 */
-.status-bar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.status-item {
-  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-left: 4px solid #409eff;
-}
-
-.status-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-
-.status-item.warning { border-left-color: #e6a23c; }
-.status-item.success { border-left-color: #67c23a; }
-.status-item.info { border-left-color: #909399; }
-.status-item.danger { border-left-color: #f56c6c; }
-
-.status-item .value {
-  font-size: 28px;
-  font-weight: bold;
-  color: #303133;
-  margin-bottom: 8px;
-}
-
-.status-item .label {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 5px;
-}
-
-.status-item .icon {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  font-size: 20px;
-  opacity: 0.3;
-}
-
-/* 标签页样式 */
-.tabs {
+<style scoped lang="scss">
+.md3-dashboard {
   display: flex;
+  flex-direction: column;
   gap: 20px;
-  margin-bottom: 20px;
-  background: white;
-  padding: 10px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.tab {
-  padding: 12px 24px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  color: #606266;
-  font-weight: 500;
-}
-
-.tab:hover {
-  background: #f0f9ff;
-  color: #409eff;
-}
-
-.tab.active {
-  background: linear-gradient(135deg, #409eff, #67c23a);
-  color: white;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
-}
-
-/* 卡片样式 */
-.cards {
+.md3-status-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.card {
-  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-  border-left: 4px solid #409eff;
-  position: relative;
+.md3-status-card {
+  border-radius: 20px;
   overflow: hidden;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-}
-
-.card.warning { border-left-color: #e6a23c; }
-.card.good { border-left-color: #67c23a; }
-.card.normal { border-left-color: #409eff; }
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100px;
-  height: 100px;
-  background: linear-gradient(45deg, transparent 30%, rgba(64, 158, 255, 0.1));
-  border-radius: 0 0 0 100px;
-}
-
-.card-header {
+.md3-status-body {
+  padding: 16px 16px 14px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.card-value {
-  font-size: 32px;
-  font-weight: bold;
-  color: #303133;
+.md3-status-top {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.trend {
-  font-size: 20px;
-  font-weight: normal;
-}
-
-.trend.up { color: #67c23a; }
-.trend.down { color: #f56c6c; }
-
-.card-percentage {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  background: #f0f9ff;
-  color: #409eff;
-  font-weight: 500;
-}
-
-.card-label {
-  font-size: 16px;
-  color: #606266;
-  margin-bottom: 15px;
-  font-weight: 500;
-}
-
-.detail {
-  color: #409eff;
-  cursor: pointer;
-  font-size: 14px;
-  transition: color 0.3s ease;
-}
-
-.detail:hover {
-  color: #66b1ff;
-}
-
-/* 图表容器样式 */
-.charts-container {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 30px;
-  margin-bottom: 30px;
-}
-
-.chart-panel {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
-
-.chart-panel.large {
-  grid-column: span 1;
-}
-
-.chart-panel.medium {
-  grid-column: span 1;
-}
-
-.panel-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid #f0f2f5;
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(135deg, #f8f9fa, #fff);
+  gap: 10px;
 }
 
-.panel-header h3 {
-  margin: 0;
+.md3-status-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.md3-status-icon {
   font-size: 18px;
-  color: #303133;
+  opacity: 0.8;
+}
+
+.md3-status-value {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--md-sys-color-on-surface);
+}
+
+.md3-status-card.warning {
+  background: color-mix(in srgb, #ed6c02 12%, var(--md-sys-color-surface));
+}
+
+.md3-status-card.success {
+  background: color-mix(in srgb, #2e7d32 12%, var(--md-sys-color-surface));
+}
+
+.md3-status-card.info {
+  background: color-mix(in srgb, var(--md-sys-color-secondary) 10%, var(--md-sys-color-surface));
+}
+
+.md3-status-card.danger {
+  background: color-mix(in srgb, var(--md-sys-color-error) 10%, var(--md-sys-color-surface));
+}
+
+.md3-tabs-card {
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 6px 10px;
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+md-tabs {
+  width: 100%;
+  --md-tabs-divider-color: transparent;
+}
+
+.md3-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.md3-kpi-card {
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.md3-kpi-card.normal {
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.md3-kpi-card.good {
+  background: color-mix(in srgb, #2e7d32 12%, var(--md-sys-color-surface-container-lowest));
+}
+
+.md3-kpi-card.warning {
+  background: color-mix(in srgb, #ed6c02 14%, var(--md-sys-color-surface-container-lowest));
+}
+
+.md3-kpi-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 18px 0;
+  gap: 12px;
+}
+
+.md3-kpi-value {
+  font-size: 30px;
+  font-weight: 650;
+  color: var(--md-sys-color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.md3-kpi-trend {
+  font-size: 18px;
+}
+
+.md3-kpi-trend.up {
+  color: #2e7d32;
+}
+
+.md3-kpi-trend.down {
+  color: var(--md-sys-color-error);
+}
+
+.md3-kpi-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--md-sys-color-primary) 14%, var(--md-sys-color-surface));
+  color: var(--md-sys-color-on-surface);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.md3-kpi-label {
+  padding: 10px 18px 12px;
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
   font-weight: 600;
 }
 
-.chart-filters select {
-  padding: 8px 12px;
-  border: 1px solid #dcdfe6;
-  border-radius: 6px;
-  background: white;
-  color: #606266;
-  font-size: 14px;
+.md3-kpi-actions {
+  padding: 0 12px 14px;
+  display: flex;
+  justify-content: flex-end;
 }
 
-.refresh-indicator {
+.md3-charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+
+.md3-bottom-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+
+.md3-panel {
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.md3-panel-header {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.md3-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
+}
+
+.md3-panel-title md-icon {
+  color: var(--md-sys-color-primary);
+}
+
+.md3-select {
+  min-width: 150px;
+}
+
+.md3-chart {
+  height: 320px;
+}
+
+.md3-live-indicator {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #909399;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
-.refresh-dot {
+.md3-live-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #909399;
-  animation: pulse 2s infinite;
+  background: var(--md-sys-color-outline);
 }
 
-.refresh-indicator.active .refresh-dot {
-  background: #67c23a;
-  animation: pulse 0.5s infinite;
+.md3-live-indicator[data-active="true"] .md3-live-dot {
+  background: #2e7d32;
+  box-shadow: 0 0 0 6px color-mix(in srgb, #2e7d32 18%, transparent);
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+.md3-monitor-list {
+  max-height: 340px;
+  overflow: auto;
 }
 
-/* 库存监控样式 */
-.inventory-monitor {
-  padding: 0;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.monitor-item {
+.md3-monitor-item {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 16px;
-  padding: 16px 24px;
-  border-bottom: 1px solid #f0f2f5;
-  transition: background 0.3s ease;
+  gap: 14px;
   align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 70%, transparent);
 }
 
-.monitor-item:hover {
-  background: #f9fafc;
+.md3-monitor-item:hover {
+  background: var(--md-sys-color-surface-container-low);
 }
 
-.monitor-item:last-child {
-  border-bottom: none;
+.md3-monitor-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
 }
 
-.monitor-item.warning {
-  background: linear-gradient(90deg, #fef0e6, transparent);
-}
-
-.monitor-item.critical {
-  background: linear-gradient(90deg, #fef0f0, transparent);
-}
-
-.item-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.item-name {
-  font-weight: 600;
-  color: #303133;
-  font-size: 14px;
-}
-
-.item-location {
+.md3-monitor-sub {
   font-size: 12px;
-  color: #909399;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
-.item-quantity {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.md3-monitor-qty {
+  text-align: right;
 }
 
-.item-quantity .current {
-  font-size: 16px;
-  font-weight: bold;
-  color: #303133;
+.md3-monitor-num {
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--md-sys-color-on-surface);
 }
 
-.item-quantity .unit {
-  font-size: 12px;
-  color: #909399;
+.md3-monitor-unit {
+  font-size: 11px;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
-.item-status {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-}
-
-.status-bar-mini {
-  width: 60px;
+.md3-meter-track {
+  width: 78px;
   height: 8px;
-  background: #f0f2f5;
-  border-radius: 4px;
+  background: var(--md-sys-color-surface-container);
+  border-radius: 999px;
   overflow: hidden;
 }
 
-.status-bar-mini .fill {
+.md3-meter-fill {
   height: 100%;
-  background: linear-gradient(90deg, #f56c6c, #e6a23c, #67c23a);
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, var(--md-sys-color-error), #ed6c02, #2e7d32);
 }
 
-.percentage {
-  font-size: 12px;
-  color: #606266;
-  font-weight: 500;
+.md3-meter-pct {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--md-sys-color-on-surface-variant);
+  text-align: right;
 }
 
-/* 底部区域样式 */
-.bottom-section {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 30px;
-}
-
-/* 仓库热力图样式 */
-.warehouse-selector {
+.md3-chip-row {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.warehouse-selector button {
-  padding: 6px 12px;
-  border: 1px solid #dcdfe6;
-  background: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.3s ease;
+.md3-heatmap {
+  padding: 18px;
 }
 
-.warehouse-selector button:hover {
-  border-color: #409eff;
-  color: #409eff;
-}
-
-.warehouse-selector button.active {
-  background: #409eff;
-  color: white;
-  border-color: #409eff;
-}
-
-.warehouse-heatmap {
-  padding: 24px;
-}
-
-.warehouse-layout {
+.md3-warehouse-layout {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
 }
 
-.location-cell {
+.md3-location-cell {
+  height: 64px;
+  border-radius: 16px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-low);
   position: relative;
-  height: 60px;
-  border-radius: 8px;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
 }
 
-.location-cell:hover {
-  transform: scale(1.05);
-  border-color: #409eff;
+.md3-location-cell[data-status="low"] {
+  background: color-mix(in srgb, #2e7d32 12%, var(--md-sys-color-surface-container-low));
 }
 
-.location-cell.empty {
-  background: #f5f7fa;
-  color: #c0c4cc;
+.md3-location-cell[data-status="medium"] {
+  background: color-mix(in srgb, #ed6c02 12%, var(--md-sys-color-surface-container-low));
 }
 
-.location-cell.low {
-  background: linear-gradient(135deg, #e1f3d8, #f0f9ff);
-  color: #67c23a;
+.md3-location-cell[data-status="high"] {
+  background: color-mix(in srgb, var(--md-sys-color-error) 10%, var(--md-sys-color-surface-container-low));
 }
 
-.location-cell.medium {
-  background: linear-gradient(135deg, #fdf6ec, #f0f9ff);
-  color: #e6a23c;
+.md3-location-cell[data-status="full"] {
+  background: color-mix(in srgb, var(--md-sys-color-outline) 18%, var(--md-sys-color-surface-container-low));
 }
 
-.location-cell.high {
-  background: linear-gradient(135deg, #fef0f0, #f0f9ff);
-  color: #f56c6c;
-}
-
-.location-cell.full {
-  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
-  color: #909399;
-}
-
-.location-label {
+.md3-location-code {
+  position: relative;
+  z-index: 1;
   font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 4px;
 }
 
-.occupancy-indicator {
+.md3-location-fill {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  background: currentColor;
-  opacity: 0.3;
-  border-radius: 0 0 6px 6px;
-  transition: height 0.3s ease;
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 22%, transparent);
 }
 
-.heatmap-legend {
+.md3-legend {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 12px;
   flex-wrap: wrap;
+  padding-top: 14px;
 }
 
-.legend-item {
-  display: flex;
+.md3-legend-item {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 12px;
-  color: #606266;
+  font-weight: 650;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
-.legend-item .color {
-  width: 16px;
-  height: 16px;
+.md3-legend-dot {
+  width: 12px;
+  height: 12px;
   border-radius: 4px;
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid var(--md-sys-color-outline-variant);
 }
 
-.legend-item .color.empty { background: #f5f7fa; }
-.legend-item .color.low { background: #e1f3d8; }
-.legend-item .color.medium { background: #fdf6ec; }
-.legend-item .color.high { background: #fef0f0; }
-.legend-item .color.full { background: #f0f0f0; }
+.md3-legend-dot[data-level="low"] {
+  background: color-mix(in srgb, #2e7d32 16%, var(--md-sys-color-surface-container));
+}
 
-/* 预警面板样式 */
-.alert-panel {
-  background: white;
+.md3-legend-dot[data-level="medium"] {
+  background: color-mix(in srgb, #ed6c02 16%, var(--md-sys-color-surface-container));
+}
+
+.md3-legend-dot[data-level="high"] {
+  background: color-mix(in srgb, var(--md-sys-color-error) 14%, var(--md-sys-color-surface-container));
+}
+
+.md3-legend-dot[data-level="full"] {
+  background: color-mix(in srgb, var(--md-sys-color-outline) 18%, var(--md-sys-color-surface-container));
+}
+
+.md3-alert-count {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--md-sys-color-error) 12%, var(--md-sys-color-surface));
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+}
+
+.md3-alert-list {
+  max-height: 420px;
+  overflow: auto;
+}
+
+.md3-alert-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 70%, transparent);
+}
+
+.md3-alert-item:hover {
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.md3-alert-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+}
+
+.md3-alert-desc {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.md3-alert-time {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 650;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 70%, transparent);
+}
+
+.md3-dialog-content {
+  display: grid;
+  gap: 14px;
+}
+
+.md3-dialog-message {
+  font-size: 13px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 600;
+}
+
+.md3-dialog-kv {
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  border: 1px solid var(--md-sys-color-outline-variant);
   overflow: hidden;
 }
 
-.alert-count {
-  background: linear-gradient(135deg, #f56c6c, #ff7875);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.alert-list {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.alert-item {
+.md3-kv-row {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 16px;
-  padding: 16px 24px;
-  border-bottom: 1px solid #f0f2f5;
-  transition: background 0.3s ease;
-  align-items: center;
+  grid-template-columns: 140px 1fr;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--md-sys-color-surface-container-lowest);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--md-sys-color-on-surface);
 }
 
-.alert-item:hover {
-  background: #f9fafc;
-}
-
-.alert-item:last-child {
+.md3-kv-row:last-child {
   border-bottom: none;
 }
 
-.alert-item.critical {
-  border-left: 4px solid #f56c6c;
+.md3-kv-row span:first-child {
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 700;
 }
 
-.alert-item.warning {
-  border-left: 4px solid #e6a23c;
+@media (max-width: 1360px) {
+  .md3-status-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .md3-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.alert-item.info {
-  border-left: 4px solid #409eff;
-}
-
-.alert-icon {
-  font-size: 18px;
-  color: #f56c6c;
-}
-
-.alert-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.alert-title {
-  font-weight: 600;
-  color: #303133;
-  font-size: 14px;
-}
-
-.alert-description {
-  font-size: 12px;
-  color: #606266;
-  line-height: 1.4;
-}
-
-.alert-time {
-  font-size: 11px;
-  color: #c0c4cc;
-}
-
-.alert-action button {
-  padding: 6px 12px;
-  background: #409eff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background 0.3s ease;
-}
-
-.alert-action button:hover {
-  background: #66b1ff;
-}
-
-/* 预警弹窗样式 */
-.alert-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-content {
-  background: white;
-  border-radius: 16px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from { transform: translateY(-50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-header {
-  padding: 24px 24px 16px;
-  border-bottom: 1px solid #f0f2f5;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #f56c6c;
-  font-size: 18px;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #c0c4cc;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-}
-
-.close-btn:hover {
-  background: #f5f7fa;
-  color: #909399;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
-.modal-body p {
-  margin: 0 0 16px;
-  color: #606266;
-  line-height: 1.5;
-}
-
-.alert-details {
-  background: #f9fafc;
-  padding: 16px;
-  border-radius: 8px;
-  display: grid;
-  gap: 8px;
-}
-
-.alert-details div {
-  font-size: 14px;
-  color: #303133;
-}
-
-.alert-details div:before {
-  content: '• ';
-  color: #409eff;
-  font-weight: bold;
-}
-
-.modal-footer {
-  padding: 16px 24px 24px;
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.modal-footer button {
-  padding: 10px 20px;
-  border: 1px solid #dcdfe6;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  background: white;
-  color: #606266;
-}
-
-.modal-footer button:hover {
-  border-color: #c0c4cc;
-}
-
-.modal-footer button.primary {
-  background: #409eff;
-  color: white;
-  border-color: #409eff;
-}
-
-.modal-footer button.primary:hover {
-  background: #66b1ff;
-  border-color: #66b1ff;
-}
-
-/* 响应式设计 */
-@media (max-width: 1200px) {
-  .charts-container {
+@media (max-width: 1024px) {
+  .md3-charts-grid,
+  .md3-bottom-grid {
     grid-template-columns: 1fr;
   }
-  
-  .bottom-section {
-    grid-template-columns: 1fr;
+
+  .md3-warehouse-layout {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
-@media (max-width: 768px) {
-  .dashboard-container {
-    padding: 10px;
-  }
-  
-  .status-bar {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-  }
-  
-  .cards {
+@media (max-width: 680px) {
+  .md3-cards-grid {
     grid-template-columns: 1fr;
-    gap: 15px;
   }
-  
-  .tabs {
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  .warehouse-layout {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .heatmap-legend {
-    gap: 10px;
+
+  .md3-warehouse-layout {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 </style>

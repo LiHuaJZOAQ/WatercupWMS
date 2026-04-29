@@ -1,121 +1,111 @@
 <template>
-  <el-row class="tac">
-    <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo" default-active="首页"
-      text-color="#fff" @select="handleMenuClick" @open="handleOpen" @close="handleClose">
-      <el-menu-item index="首页">
-        <template #title>
-          <el-icon>
-            <HomeFilled />
-          </el-icon>
-          <span>首页</span>
-        </template>
-      </el-menu-item>
-      <el-sub-menu index="基础数据">
-        <template #title>
-          <el-icon>
-            <Document />
-          </el-icon>
-          <span>基础数据</span>
-        </template>
-        <el-menu-item index="基础数据/往来单位管理">往来单位管理</el-menu-item>
-        <el-menu-item index="基础数据/部门管理">部门管理</el-menu-item>
-        <el-menu-item index="基础数据/商品档案">商品档案 (SKU)</el-menu-item>
-      </el-sub-menu>
-      <el-sub-menu index="入库管理">
-        <template #title>
-          <el-icon>
-            <Sell />
-          </el-icon>
-          <span>入库管理</span>
-        </template>
-        <el-menu-item index="入库管理/通用入库单">入库单管理</el-menu-item>
-      </el-sub-menu>
-      <el-sub-menu index="出库管理">
-        <template #title>
-          <el-icon>
-            <Van />
-          </el-icon>
-          <span>出库管理</span>
-        </template>
-        <el-menu-item index="出库管理/通用出库单">出库单管理</el-menu-item>
-        <el-menu-item index="出库管理/波次拣货">智能波次拣货 (推荐)</el-menu-item>
-      </el-sub-menu>
-      <el-sub-menu index="盘点管理">
-        <template #title>
-          <el-icon>
-            <DocumentChecked />
-          </el-icon>
-          <span>盘点管理</span>
-        </template>
-        <el-menu-item index="盘点管理/通用盘点">库存盘点作业</el-menu-item>
-      </el-sub-menu>
-      <el-sub-menu index="库存管理">
-        <template #title>
-          <el-icon>
-            <Coin />
-          </el-icon>
-          <span>库存管理</span>
-        </template>
-        <el-menu-item index="库存管理/全局库存">全局库存查询</el-menu-item>
-      </el-sub-menu>
-      <el-sub-menu index="仓位管理">
-        <template #title>
-          <el-icon>
-            <Location />
-          </el-icon>
-          <span>仓位管理</span>
-        </template>
-        <el-menu-item index="仓位管理/仓库库位">仓库库位</el-menu-item>
-        <!-- <el-menu-item index="仓位管理/产品仓位">仓位</el-menu-item> -->
+  <div class="md3-nav-drawer">
+    <div class="logo-container">
+      <md-icon class="logo-icon">inventory_2</md-icon>
+      <span class="logo-text">General WMS</span>
+    </div>
+
+    <div class="nav-content">
+      <md-list>
+        <md-list-item type="button" :active="selectedIndex === '首页'" @click="handleMenuClick('首页')">
+          <md-icon slot="start">home</md-icon>
+          <div slot="headline">首页</div>
+        </md-list-item>
+
+        <div class="nav-divider"></div>
+        <div class="nav-subheader">基础数据</div>
+
+        <md-list-item type="button" :active="selectedIndex === '基础数据/往来单位管理'" @click="handleMenuClick('基础数据/往来单位管理')">
+          <md-icon slot="start">group</md-icon>
+          <div slot="headline">往来单位管理</div>
+        </md-list-item>
+        <md-list-item type="button" :active="selectedIndex === '基础数据/部门管理'" @click="handleMenuClick('基础数据/部门管理')">
+          <md-icon slot="start">corporate_fare</md-icon>
+          <div slot="headline">部门管理</div>
+        </md-list-item>
+        <md-list-item type="button" :active="selectedIndex === '基础数据/商品档案'" @click="handleMenuClick('基础数据/商品档案')">
+          <md-icon slot="start">category</md-icon>
+          <div slot="headline">商品档案 (SKU)</div>
+        </md-list-item>
+
+        <div class="nav-divider"></div>
+        <div class="nav-subheader">仓储业务</div>
+
+        <md-list-item type="button" :active="selectedIndex === '入库管理/通用入库单'" @click="handleMenuClick('入库管理/通用入库单')">
+          <md-icon slot="start">arrow_downward</md-icon>
+          <div slot="headline">入库单管理</div>
+        </md-list-item>
+        <md-list-item type="button" :active="selectedIndex === '出库管理/通用出库单'" @click="handleMenuClick('出库管理/通用出库单')">
+          <md-icon slot="start">arrow_upward</md-icon>
+          <div slot="headline">出库单管理</div>
+        </md-list-item>
+        <md-list-item type="button" :active="selectedIndex === '出库管理/波次拣货'" @click="handleMenuClick('出库管理/波次拣货')">
+          <md-icon slot="start">view_timeline</md-icon>
+          <div slot="headline">智能波次拣货</div>
+        </md-list-item>
+        <md-list-item type="button" :active="selectedIndex === '盘点管理/通用盘点'" @click="handleMenuClick('盘点管理/通用盘点')">
+          <md-icon slot="start">fact_check</md-icon>
+          <div slot="headline">库存盘点作业</div>
+        </md-list-item>
         
-      </el-sub-menu>
-      <el-sub-menu index="系统设置">
-        <template #title>
-          <el-icon>
-            <Setting />
-          </el-icon>
-          <span>系统设置</span>
-        </template>
-        <el-menu-item index="系统设置/用户管理">用户管理</el-menu-item>
-        <el-menu-item index="系统设置/角色管理">角色管理</el-menu-item>
-        <el-menu-item index="系统设置/操作日志">操作日志</el-menu-item>
-      </el-sub-menu>
-      
-      <!-- 新增创新功能入口 -->
-      <el-menu-item index="创新功能/移动扫码台">
-        <el-icon>
-          <Cellphone />
-        </el-icon>
-        <template #title>移动扫码工作台</template>
-      </el-menu-item>
-    </el-menu>
-  </el-row>
-  <template>
+        <div class="nav-divider"></div>
+        <div class="nav-subheader">库存与仓位</div>
+
+        <md-list-item type="button" :active="selectedIndex === '库存管理/全局库存'" @click="handleMenuClick('库存管理/全局库存')">
+          <md-icon slot="start">inventory</md-icon>
+          <div slot="headline">全局库存查询</div>
+        </md-list-item>
+        <md-list-item type="button" :active="selectedIndex === '仓位管理/仓库库位'" @click="handleMenuClick('仓位管理/仓库库位')">
+          <md-icon slot="start">place</md-icon>
+          <div slot="headline">仓库库位</div>
+        </md-list-item>
+
+        <div class="nav-divider"></div>
+        <div class="nav-subheader">系统与设置</div>
+
+        <md-list-item type="button" :active="selectedIndex === '系统设置/用户管理'" @click="handleMenuClick('系统设置/用户管理')">
+          <md-icon slot="start">manage_accounts</md-icon>
+          <div slot="headline">用户管理</div>
+        </md-list-item>
+        <md-list-item type="button" :active="selectedIndex === '系统设置/角色管理'" @click="handleMenuClick('系统设置/角色管理')">
+          <md-icon slot="start">admin_panel_settings</md-icon>
+          <div slot="headline">角色管理</div>
+        </md-list-item>
+        <md-list-item type="button" :active="selectedIndex === '系统设置/操作日志'" @click="handleMenuClick('系统设置/操作日志')">
+          <md-icon slot="start">history</md-icon>
+          <div slot="headline">操作日志</div>
+        </md-list-item>
+
+        <div class="nav-divider"></div>
+        <div class="nav-subheader">创新功能</div>
+        <md-list-item type="button" :active="selectedIndex === '创新功能/移动扫码台'" @click="handleMenuClick('创新功能/移动扫码台')">
+          <md-icon slot="start">qr_code_scanner</md-icon>
+          <div slot="headline">移动扫码工作台</div>
+        </md-list-item>
+
+      </md-list>
+    </div>
+
     <LogoutView :State="LogoutState" />
-  </template>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import {
-  Document,
-  Menu as IconMenu,
-  Location,
-  Setting,
-  HomeFilled,
-  Cellphone
-} from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import LogoutView from '@/views/LogoutView.vue'
 
 const LogoutState = ref(false)
 const selectedIndex = ref('首页')
 const emit = defineEmits(['onChangeView'])
+
 const sendChangeView = (view: any) => {
   emit('onChangeView', view)
 }
+
 const handleMenuClick = (index: string) => {
+  selectedIndex.value = index;
+  
   if (index === "首页") {
-    console.log("首页")
     sendChangeView("MainView")
   } else if (index === "基础数据/往来单位管理") {
     sendChangeView("SupplierManage")
@@ -147,17 +137,78 @@ const handleMenuClick = (index: string) => {
     LogoutState.value = LogoutState.value == true ? false : true
   }
 };
-const handleOpen = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
-const handleClose = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
 </script>
 
 <style scoped lang="scss">
-.el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 200px;
-  height: 100vh;
+.md3-nav-drawer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--md-sys-color-surface-container, #f2f3f5);
+  color: var(--md-sys-color-on-surface, #1a1c1e);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  padding: 24px 28px;
+  gap: 12px;
+  
+  .logo-icon {
+    font-size: 28px;
+    color: var(--md-sys-color-primary, #0061a4);
+  }
+  
+  .logo-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface, #1a1c1e);
+    letter-spacing: -0.5px;
+  }
+}
+
+.nav-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px 24px;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--md-sys-color-outline-variant, #c2c7cf);
+    border-radius: 4px;
+  }
+}
+
+md-list {
+  --md-list-container-color: transparent;
+}
+
+md-list-item {
+  border-radius: 28px;
+  margin-bottom: 4px;
+  --md-list-item-label-text-weight: 500;
+  
+  &[active] {
+    --md-list-item-container-color: var(--md-sys-color-secondary-container, #d7e2ff);
+    --md-list-item-label-text-color: var(--md-sys-color-on-secondary-container, #001a41);
+    --md-list-item-leading-icon-color: var(--md-sys-color-on-secondary-container, #001a41);
+  }
+}
+
+.nav-divider {
+  height: 1px;
+  background-color: var(--md-sys-color-outline-variant, #c2c7cf);
+  margin: 12px 16px;
+}
+
+.nav-subheader {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--md-sys-color-primary, #0061a4);
+  letter-spacing: 0.1px;
 }
 </style>

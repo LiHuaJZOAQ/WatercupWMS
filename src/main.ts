@@ -1,11 +1,12 @@
 import './assets/main.css'
+import '@material/web/all.js'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+// Element Plus removed
 import { useAuthStore } from './stores/auth'
 
 const app = createApp(App)
@@ -39,7 +40,3 @@ router.beforeEach(async (to, from, next) => {
 
 
 app.mount('#app')
-
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
-}
