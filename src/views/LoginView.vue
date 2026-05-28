@@ -11,7 +11,6 @@
       <div class="input-group">
         <label for="username">用户名</label>
         <div class="input-wrapper">
-          <i class="icon-user"></i>
           <input id="username" type="text" v-model.trim="formData.username" :disabled="isLoading" placeholder="请输入用户名">
         </div>
       </div>
@@ -19,7 +18,6 @@
       <div class="input-group">
         <label for="password">密码</label>
         <div class="input-wrapper">
-          <i class="icon-lock"></i>
           <input id="password" type="password" v-model.trim="formData.password" :disabled="isLoading"
             placeholder="请输入密码">
         </div>
@@ -35,9 +33,7 @@
 
       <!-- 底部链接 -->
       <div class="login-footer">
-        <a href="#">忘记密码?</a>
-        <span>|</span>
-        <a href="#">注册新账户</a>
+        <a href="#" >忘记密码</a>
       </div>
     </div>
 
@@ -181,14 +177,15 @@ const handleLogin = async () => {
   align-items: center;
   min-height: 100vh;
   min-width: 100vw;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* background: linear-gradient(180deg, #faf9f5 0%, #ffffff 100%); */
+  background: #faf9f5;
   padding: 20px;
 }
 
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: white;
+  background: #efe9de;
   border-radius: 12px;
   padding: 40px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
@@ -268,7 +265,7 @@ input {
 .submit-btn {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(to right, #667eea, #764ba2);
+  background: #cc785c;
   color: white;
   border: none;
   border-radius: 8px;

@@ -21,8 +21,6 @@
 
 ```
 WMS/
-├── public/                          # 静态资源目录
-│   └── image/                      # 公共图片资源
 ├── server/
 │   └── index.js                    # 后端API接口服务
 ├── src/
@@ -33,7 +31,6 @@ WMS/
 │   │   └── image/                 # 项目图片资源
 │   ├── components/                 # 公共组件
 │   │   ├── icons/                 # 图标组件
-│   │   └── StudentAad.vue         # 学生添加组件
 │   ├── router/                     # 路由配置
 │   │   └── index.ts               # 路由定义与守卫
 │   ├── stores/                     # 状态管理
@@ -93,6 +90,7 @@ WMS/
   - 库存预警趋势图表 (ECharts)
   - 销售额排名统计
   - 实时数据更新
+![]()
 
 ### 3. 入库管理模块 (`components/InStorage/`)
 
