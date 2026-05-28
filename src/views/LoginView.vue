@@ -67,7 +67,7 @@
             </div>
             <h3>登录失败</h3>
             <p>{{ resultMessage }}</p>
-            <button @click="showErrorModal = false">重试</button>
+            <button style="width: 40%;" class="submit-btn"  @click="showErrorModal = false">重试</button>
           </div>
         </div>
       </transition>
@@ -186,153 +186,119 @@ const handleLogin = async () => {
   width: 100%;
   max-width: 420px;
   background: #efe9de;
-  border-radius: 12px;
-  padding: 40px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.5s ease-in-out;
+  border: 1px solid #e6dfd8;
+  border-radius: 20px;
+  padding: 36px 32px;
+  box-shadow: 0 16px 40px rgba(20, 20, 19, 0.08);
 }
 
 .login-header {
-  text-align: center;
-  margin-bottom: 30px;
+  text-align: left;
+  margin-bottom: 22px;
+}
 
-  h2 {
-    color: #2d3748;
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
+.login-header h2 {
+  font-family: 'Copernicus', 'Tiempos Headline', serif;
+  font-size: 1.75rem;
+  line-height: 1.05;
+  font-weight: 400;
+  letter-spacing: -0.6px;
+  color: #141413;
+  margin: 0 0 6px 0;
+}
 
-  p {
-    color: #718096;
-    font-size: 14px;
-  }
+.login-header p {
+  color: #3d3d3a;
+  font-size: 0.95rem;
+  margin: 0;
 }
 
 .input-group {
   margin-bottom: 20px;
+}
 
-  label {
-    display: block;
-    margin-bottom: 8px;
-    color: #4a5568;
-    font-size: 14px;
-    font-weight: 500;
-  }
+.input-group label {
+  display: block;
+  margin-bottom: 10px;
+  color: #141413;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .input-wrapper {
   position: relative;
-
-  i {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #a0aec0;
-    font-size: 18px;
-  }
-
-  .icon-user:before {
-    content: "👤";
-  }
-
-  .icon-lock:before {
-    content: "🔒";
-  }
 }
+
+.input-wrapper i {
+  position: absolute;
+  left: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c6a64;
+  font-size: 1rem;
+}
+
 
 input {
   width: 100%;
-  padding: 12px 15px 12px 45px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.3s;
-  background-color: #f8fafc;
-
-  &:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-    outline: none;
-  }
-
-  &::placeholder {
-    color: #cbd5e0;
-  }
+  padding: 14px 16px 14px 16px;
+  border: 1px solid #e6dfd8;
+  border-radius: 12px;
+  background: #faf9f5;
+  color: #141413;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
+input:focus {
+  outline: none;
+  border-color: #cc785c;
+  box-shadow: 0 0 0 4px rgba(204, 120, 92, 0.12);
+}
+
+input::placeholder { color: #6c6a64; }
 
 .submit-btn {
   width: 100%;
-  padding: 14px;
+  padding: 14px 0;
+  border-radius: 12px;
   background: #cc785c;
-  color: white;
+  color: #faf9f5;
   border: none;
-  border-radius: 8px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
-  transition: all 0.3s;
-  margin-top: 10px;
-  position: relative;
-  overflow: hidden;
-
-  &:hover:not(:disabled) {
-    background: linear-gradient(to right, #5a6fd1, #6a4299);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-  }
-
-  &:disabled {
-    background: #cbd5e0;
-    cursor: not-allowed;
-  }
-
-  &.loading {
-    background: linear-gradient(to right, #667eea, #764ba2);
-  }
+  margin-top: 14px;
+  transition: background-color 0.18s ease, transform 0.12s ease;
 }
 
-.loading-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.submit-btn:hover:not(:disabled) { background: #a9583e; transform: translateY(-1px); }
+.submit-btn:disabled { background: #e6dfd8; color: #6c6a64; cursor: not-allowed; }
+
+.loading-text { display: inline-flex; align-items: center; justify-content: center; }
 
 .spinner {
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
   border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-  margin-right: 8px;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
 }
 
 .login-footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 18px;
   font-size: 14px;
-  color: #718096;
-
-  a {
-    color: #667eea;
-    text-decoration: none;
-    margin: 0 8px;
-    transition: color 0.2s;
-
-    &:hover {
-      color: #5a6fd1;
-      text-decoration: underline;
-    }
-  }
-
-  span {
-    color: #e2e8f0;
-  }
+  color: #6c6a64;
 }
+
+.login-footer a { color: #141413; text-decoration: none; }
+.login-footer a:hover { color: #cc785c; }
 
 /* 弹窗样式 */
 .modal {
@@ -369,7 +335,7 @@ input {
 
   button {
     padding: 10px 24px;
-    background: #667eea;
+    background: #cc785c;
     color: white;
     border: none;
     border-radius: 6px;
