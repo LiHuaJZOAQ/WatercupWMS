@@ -82,6 +82,7 @@ WMS/
   - 加载状态管理
   - 成功/错误提示模态框
   - 自动路由跳转
+![登录页面](resources/login.png)
 
 ### 2. 数据大屏模块 (`src/views/home/components/MainView.vue`)
 - **仓储数据可视化**
@@ -90,7 +91,7 @@ WMS/
   - 库存预警趋势图表 (ECharts)
   - 销售额排名统计
   - 实时数据更新
-![]()
+![数据大屏](resources/homepage.png)
 
 ### 3. 入库管理模块 (`components/InStorage/`)
 
@@ -109,6 +110,8 @@ WMS/
   - 供应商/生产商选择
   - 批次号管理
   - 表单验证与提交
+
+![入库单创建](resources/inbound.png)
 
 ### 4. 盘点管理模块 (`components/CheckStorage/`)
 
@@ -211,6 +214,7 @@ npm install
 
 # 开发环境启动
 npm run dev
+node server/index.js
 
 # 生产环境构建
 npm run build
@@ -295,6 +299,6 @@ UI更新 ← 状态更新 ← 响应处理 ← HTTP Response ← 数据库
 - 代码审查机制
 - 技术文档维护
 
----
 
-**注意**: 本项目正在持续开发中，部分功能可能需要进一步完善。建议在开发前详细了解各模块的实现逻辑和数据流向。
+> [!TIP]
+> 本项目正在持续开发中，部分功能可能需要进一步完善。建议在开发前详细了解各模块的实现逻辑和数据流向。
