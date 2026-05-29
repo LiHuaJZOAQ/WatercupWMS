@@ -82,6 +82,7 @@ WMS/
   - 加载状态管理
   - 成功/错误提示模态框
   - 自动路由跳转
+
 ![登录页面](resources/login.png)
 
 ### 2. 数据大屏模块 (`src/views/home/components/MainView.vue`)
@@ -91,6 +92,7 @@ WMS/
   - 库存预警趋势图表 (ECharts)
   - 销售额排名统计
   - 实时数据更新
+  
 ![数据大屏](resources/homepage.png)
 
 ### 3. 入库管理模块 (`components/InStorage/`)
